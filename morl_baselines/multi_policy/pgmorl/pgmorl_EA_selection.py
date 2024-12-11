@@ -17,6 +17,8 @@ import numpy as np
 import torch as th
 import wandb
 import random
+#random.seed(1)
+
 from scipy.optimize import least_squares
 
 from morl_baselines.common.evaluation import log_all_multi_policy_metrics

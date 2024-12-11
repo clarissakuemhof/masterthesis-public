@@ -46,7 +46,7 @@ def parse_args():
     parser.add_argument("--num-seeds", type=int, help="Number of seeds to use for the sweep", default=3)
 
     parser.add_argument(
-        "--seed", type=int, help="Random seed to start from, seeds will be in [seed, seed+num-seeds)", default=10
+        "--seed", type=int, help="Random seed to start from, seeds will be in [seed, seed+num-seeds)", default=1
     )
 
     parser.add_argument(

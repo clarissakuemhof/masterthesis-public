@@ -35,7 +35,7 @@ def parse_args():
     parser.add_argument(
         "--ref-point", type=float, nargs="+", help="Reference point to use for the hypervolume calculation", required=True
     )
-    parser.add_argument("--seed", type=int, help="Random seed to use", default=42)
+    parser.add_argument("--seed", type=int, help="Random seed to use", default=1)
     parser.add_argument("--wandb-entity", type=str, help="Wandb entity to use", required=False)
     parser.add_argument(
         "--auto-tag",
@@ -120,7 +120,7 @@ def main():
         if len(wandb_tag) > 0:
             os.environ["WANDB_TAGS"] = wandb_tag
 
-    if args.algo in ("pgmorl", "pgmorl_ea", "pgmorl_selection", "pgmorl_ea_selection"):
+    if args.algo in ("pgmorl", "pgmorl_ea", "pgmorl_selection", "pgmorl_ea_selection", "pgmorl_ea_selection_dynamic"):
         # PGMORL creates its own environments because it requires wrappers
         print(f"Instantiating {args.algo} on {args.env_id}")
         eval_env = mo_gym.make(args.env_id)

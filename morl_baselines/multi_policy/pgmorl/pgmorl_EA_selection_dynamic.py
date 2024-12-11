@@ -9,198 +9,24 @@ import time
 from copy import deepcopy
 from typing import List, Optional, Tuple, Union
 from typing_extensions import override
+from scipy.spatial.distance import cdist
 
 import gymnasium as gym
 import mo_gymnasium as mo_gym
 import numpy as np
 import torch as th
 import wandb
+import random
+#random.seed(1)
+import math
+
 from scipy.optimize import least_squares
 
 from morl_baselines.common.evaluation import log_all_multi_policy_metrics
 from morl_baselines.common.morl_algorithm import MOAgent
 from morl_baselines.common.pareto import ParetoArchive
 from morl_baselines.common.performance_indicators import hypervolume, sparsity
-from morl_baselines.single_policy.ser.mo_ppo import MOPPO, MOPPONet, make_env
-
-
-class PerformancePredictor:
-    """Performance prediction model.
-
-    Stores the performance deltas along with the used weights after each generation.
-    Then, uses these stored samples to perform a regression for predicting the performance of using a given weight
-    to train a given policy.
-    Predicts: Weight & performance -> delta performance
-    """
-
-    def __init__(
-        self,
-        neighborhood_threshold: float = 0.1,
-        sigma: float = 0.03,
-        A_bound_min: float = 1.0,
-        A_bound_max: float = 500.0,
-        f_scale: float = 20.0,
-    ):
-        """Initialize the performance predictor.
-
-        Args:
-            neighborhood_threshold: The threshold for the neighborhood of an evaluation.
-            sigma: The sigma value for the prediction model
-            A_bound_min: The minimum value for the A parameter of the prediction model.
-            A_bound_max: The maximum value for the A parameter of the prediction model.
-            f_scale: The scale value for the prediction model.
-        """
-        # Memory
-        self.previous_performance = []
-        self.next_performance = []
-        self.used_weight = []
-
-        # Prediction model parameters
-        self.neighborhood_threshold = neighborhood_threshold
-        self.A_bound_min = A_bound_min
-        self.A_bound_max = A_bound_max
-        self.f_scale = f_scale
-        self.sigma = sigma
-
-    def add(self, weight: np.ndarray, eval_before_pg: np.ndarray, eval_after_pg: np.ndarray) -> None:
-        """Add a new sample to the performance predictor.
-
-        Args:
-            weight: The weight used to train the policy.
-            eval_before_pg: The evaluation before training the policy.
-            eval_after_pg: The evaluation after training the policy.
-
-        Returns:
-            None
-        """
-        self.previous_performance.append(eval_before_pg)
-        self.next_performance.append(eval_after_pg)
-        self.used_weight.append(weight)
-
-    def __build_model_and_predict(
-        self,
-        training_weights,
-        training_deltas,
-        training_next_perfs,
-        current_dim,
-        current_eval: np.ndarray,
-        weight_candidate: np.ndarray,
-        sigma: float,
-    ):
-        """Uses the hyperbolic model on the training data: weights, deltas and next_perfs to predict the next delta given the current evaluation and weight.
-
-        Returns:
-             The expected delta from current_eval by using weight_candidate.
-        """
-
-        def __f(x, A, a, b, c):
-            return A * (np.exp(a * (x - b)) - 1) / (np.exp(a * (x - b)) + 1) + c
-
-        def __hyperbolic_model(params, x, y):
-            # f = A * (exp(a(x - b)) - 1) / (exp(a(x - b)) + 1) + c
-            return (
-                params[0] * (np.exp(params[1] * (x - params[2])) - 1.0) / (np.exp(params[1] * (x - params[2])) + 1)
-                + params[3]
-                - y
-            ) * w
-
-        def __jacobian(params, x, y):
-            A, a, b, _ = params[0], params[1], params[2], params[3]
-            J = np.zeros([len(params), len(x)])
-            # df_dA = (exp(a(x - b)) - 1) / (exp(a(x - b)) + 1)
-            J[0] = ((np.exp(a * (x - b)) - 1) / (np.exp(a * (x - b)) + 1)) * w
-            # df_da = A(x - b)(2exp(a(x-b)))/(exp(a(x-b)) + 1)^2
-            J[1] = (A * (x - b) * (2.0 * np.exp(a * (x - b))) / ((np.exp(a * (x - b)) + 1) ** 2)) * w
-            # df_db = A(-a)(2exp(a(x-b)))/(exp(a(x-b)) + 1)^2
-            J[2] = (A * (-a) * (2.0 * np.exp(a * (x - b))) / ((np.exp(a * (x - b)) + 1) ** 2)) * w
-            # df_dc = 1
-            J[3] = w
-
-            return np.transpose(J)
-
-        train_x = []
-        train_y = []
-        w = []
-        for i in range(len(training_weights)):
-            train_x.append(training_weights[i][current_dim])
-            train_y.append(training_deltas[i][current_dim])
-            diff = np.abs(training_next_perfs[i] - current_eval)
-            dist = np.linalg.norm(diff / np.abs(current_eval))
-            coef = np.exp(-((dist / sigma) ** 2) / 2.0)
-            w.append(coef)
-
-        train_x = np.array(train_x)
-        train_y = np.array(train_y)
-        w = np.array(w)
-
-        A_upperbound = np.clip(np.max(train_y) - np.min(train_y), 1.0, 500.0)
-        initial_guess = np.ones(4)
-        res_robust = least_squares(
-            __hyperbolic_model,
-            initial_guess,
-            loss="soft_l1",
-            f_scale=self.f_scale,
-            args=(train_x, train_y),
-            jac=__jacobian,
-            bounds=([0, 0.1, -5.0, -500.0], [A_upperbound, 20.0, 5.0, 500.0]),
-        )
-
-        return __f(weight_candidate[current_dim], *res_robust.x)
-
-    def predict_next_evaluation(self, weight_candidate: np.ndarray, policy_eval: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-        """Predict the next evaluation of the policy.
-
-        Use a part of the collected data (determined by the neighborhood threshold) to predict the performance
-        after using weight to train the policy whose current evaluation is policy_eval.
-
-        Args:
-            weight_candidate: weight candidate
-            policy_eval: current evaluation of the policy
-
-        Returns:
-            the delta prediction, along with the predicted next evaluations
-        """
-        neighbor_weights = []
-        neighbor_deltas = []
-        neighbor_next_perf = []
-        current_sigma = self.sigma / 2.0
-        current_neighb_threshold = self.neighborhood_threshold / 2.0
-        # Iterates until we find at least 4 neighbors, enlarges the neighborhood at each iteration
-        while len(neighbor_weights) < 4:
-            # Enlarging neighborhood
-            current_sigma *= 2.0
-            current_neighb_threshold *= 2.0
-
-            print(f"current_neighb_threshold: {current_neighb_threshold}")
-            print(f"np.abs(policy_eval): {np.abs(policy_eval)}")
-            if current_neighb_threshold == np.inf or current_sigma == np.inf:
-                raise ValueError("Cannot find at least 4 neighbors by enlarging the neighborhood.")
-
-            # Filtering for neighbors
-            for previous_perf, next_perf, neighb_w in zip(self.previous_performance, self.next_performance, self.used_weight):
-                if np.all(np.abs(previous_perf - policy_eval) < current_neighb_threshold * np.abs(policy_eval)) and tuple(
-                    next_perf
-                ) not in list(map(tuple, neighbor_next_perf)):
-                    neighbor_weights.append(neighb_w)
-                    neighbor_deltas.append(next_perf - previous_perf)
-                    neighbor_next_perf.append(next_perf)
-
-        # constructing a prediction model for each objective dimension, and using it to construct the delta predictions
-        delta_predictions = [
-            self.__build_model_and_predict(
-                training_weights=neighbor_weights,
-                training_deltas=neighbor_deltas,
-                training_next_perfs=neighbor_next_perf,
-                current_dim=obj_num,
-                current_eval=policy_eval,
-                weight_candidate=weight_candidate,
-                sigma=current_sigma,
-            )
-            for obj_num in range(weight_candidate.size)
-        ]
-        delta_predictions = np.array(delta_predictions)
-        return delta_predictions, delta_predictions + policy_eval
-
+from morl_baselines.single_policy.ser.mo_ppo_copy import MOPPO, MOPPONet, make_env
 
 def generate_weights(delta_weight: float) -> np.ndarray:
     """Generates weights uniformly distributed over the objective dimensions. These weight vectors are separated by delta_weight distance.
@@ -276,8 +102,47 @@ class PerformanceBuffer:
                     self.bins_evals[buffer_id][i] = evaluation
                     break
 
+class NoveltySearch:
+    def __init__(self, archive, k=5):
+        """
+        A simple novelty search mechanism based on distance to k-nearest neighbors in the objective space.
 
-class PGMORL(MOAgent):
+        Args:
+            archive: A list to store previous solutions' performance metrics.
+            k: Number of nearest neighbors to use for calculating novelty.
+        """
+        self.archive = archive  # Store past solutions' evaluations
+        self.k = k  # Number of neighbors to consider for novelty
+
+    def compute_novelty(self, candidate_performance):
+        """
+        Compute the novelty of a candidate solution based on its distance to past solutions.
+
+        Args:
+            candidate_performance: The performance of the current candidate.
+
+        Returns:
+            The novelty score, based on k-nearest neighbors.
+        """
+        #print(self.archive)
+        if len(self.archive) == 0:
+            return 0.0  # No novelty for the first solution
+        
+        archive_evaluations = np.array(self.archive.evaluations)
+        
+        # distance to all points in archive
+        distances = cdist(candidate_performance[np.newaxis, :], archive_evaluations, metric='euclidean')[0]
+        
+        # select the k-nearest neighbors and compute the average distance (novelty score)
+        nearest_neighbors = sorted(distances)[:self.k]
+        novelty_score = sum(nearest_neighbors) / self.k
+        return novelty_score
+
+    def add_to_archive(self, performance):
+        """Adds a performance evaluation to the Pareto archive."""
+        self.archive.add(candidate=None, evaluation=performance)
+
+class PGMORL_EA_selection_dynamic(MOAgent):
     """Prediction Guided Multi-Objective Reinforcement Learning.
 
     Reference: J. Xu, Y. Tian, P. Ma, D. Rus, S. Sueda, and W. Matusik,
@@ -297,7 +162,7 @@ class PGMORL(MOAgent):
         pop_size: int = 6,
         warmup_iterations: int = 2, # default 80
         steps_per_iteration: int = 2048,
-        evolutionary_iterations: int = 10, #default 20
+        evolutionary_iterations: int = 2, # default 20
         num_weight_candidates: int = 7,
         num_performance_buffer: int = 100,
         performance_buffer_size: int = 2,
@@ -307,7 +172,7 @@ class PGMORL(MOAgent):
         env=None,
         gamma: float = 0.995,
         project_name: str = "MORL-baselines",
-        experiment_name: str = "PGMORL",
+        experiment_name: str = "PGMORL_EA_selection_dynamic",
         wandb_entity: Optional[str] = None,
         seed: Optional[int] = None,
         log: bool = True,
@@ -395,7 +260,6 @@ class PGMORL(MOAgent):
             max_size=self.performance_buffer_size,
             origin=origin,
         )
-        self.predictor = PerformancePredictor()
 
         # PPO Parameters
         self.net_arch = net_arch
@@ -472,6 +336,8 @@ class PGMORL(MOAgent):
             for i in range(self.pop_size)
         ]
 
+        self.novelty_search = NoveltySearch(self.archive)
+
     @override
     def get_config(self) -> dict:
         return {
@@ -517,7 +383,6 @@ class PGMORL(MOAgent):
         evaluations_before_train: List[np.ndarray],
         ref_point: np.ndarray,
         known_pareto_front: Optional[List[np.ndarray]] = None,
-        add_to_prediction: bool = True,
     ):
         """Evaluates all agents and store their current performances on the buffer and pareto archive."""
         for i, agent in enumerate(self.agents):
@@ -525,12 +390,6 @@ class PGMORL(MOAgent):
             # Storing current results
             self.population.add(agent, discounted_reward)
             self.archive.add(agent, discounted_reward)
-            if add_to_prediction:
-                self.predictor.add(
-                    agent.weights.detach().cpu().numpy(),
-                    evaluations_before_train[i],
-                    discounted_reward,
-                )
             evaluations_before_train[i] = discounted_reward
 
         if self.log:
@@ -544,76 +403,234 @@ class PGMORL(MOAgent):
                 n_sample_weights=self.num_eval_weights_for_eval,
                 ref_front=known_pareto_front,
             )
-
-    def __task_weight_selection(self, ref_point: np.ndarray):
-        """Chooses agents and weights to train at the next iteration based on the current population and prediction model."""
-        candidate_weights = generate_weights(self.delta_weight / 2.0)  # Generates more weights than agents
-        self.np_random.shuffle(candidate_weights)  # Randomize
+    
+    def __policy_selection(self, total_timesteps, ref_point: np.ndarray, update_best: bool = True):
+        """
+        Chooses agents and weights to train at the next iteration based on regret and uncertainty.
+        Args:
+        - ref_point: Reference point for calculating hypervolume.
+        - update_best: If True, update the best agents (lowest regret/uncertainty). If False, update the worst agents (highest regret/uncertainty).
+        """
+        candidate_weights = generate_weights(self.delta_weight / 2.0)  # generate more weights than agents
+        self.np_random.shuffle(candidate_weights)  
 
         current_front = deepcopy(self.archive.evaluations)
         population = self.population.individuals
         population_eval = self.population.evaluations
         selected_tasks = []
-        # For each worker, select a (policy, weight) tuple
+
         for i in range(len(self.agents)):
-            max_improv = float("-inf")
+            max_score = float("-inf") if update_best else float("inf")
             best_candidate = None
             best_eval = None
-            best_predicted_eval = None
 
-            # In each selection, look at every possible candidate in the current population and every possible weight generated
             for candidate, last_candidate_eval in zip(population, population_eval):
-                # Pruning the already selected (candidate, weight) pairs
                 candidate_tuples = [
                     (last_candidate_eval, weight)
                     for weight in candidate_weights
                     if (tuple(last_candidate_eval), tuple(weight)) not in selected_tasks
                 ]
 
-                # Prediction of improvements of each pair
-                delta_predictions, predicted_evals = map(
-                    list,
-                    zip(
-                        *[
-                            self.predictor.predict_next_evaluation(weight, candidate_eval)
-                            for candidate_eval, weight in candidate_tuples
-                        ]
-                    ),
-                )
-                # optimization criterion is a hypervolume - sparsity
-                mixture_metrics = [
-                    hypervolume(ref_point, current_front + [predicted_eval]) - sparsity(current_front + [predicted_eval])
-                    for predicted_eval in predicted_evals
+                # regret and uncertainty for each candidate
+                regret_scores = [
+                    np.linalg.norm(last_candidate_eval - ref_point)
+                    for candidate_eval, weight in candidate_tuples
                 ]
-                # Best among all the weights for the current candidate
-                current_candidate_weight = np.argmax(np.array(mixture_metrics))
-                current_candidate_improv = np.max(np.array(mixture_metrics))
 
-                # Best among all candidates, weight tuple update
-                if max_improv < current_candidate_improv:
-                    max_improv = current_candidate_improv
+                uncertainty_scores = [
+                    np.var(last_candidate_eval)
+                    for candidate_eval, weight in candidate_tuples
+                ]
+
+                # normalize before combining
+                #regret_scores = (regret_scores - np.min(regret_scores)) / (np.max(regret_scores) - np.min(regret_scores) + 1e-8)
+                #uncertainty_scores = (uncertainty_scores - np.min(uncertainty_scores)) / (np.max(uncertainty_scores) - np.min(uncertainty_scores) + 1e-8)
+
+                if self.log:
+                    wandb.log(
+                        {
+                            "new/average_regret": np.mean(regret_scores),
+                            "new/average_uncertainty": np.mean(uncertainty_scores),
+                            #"new/average_mixture_metrics": np.mean(mixture_scores) 
+                        }
+                    )
+                
+                exploration_weight = 0.9 * math.exp(-self.global_step / total_timesteps)  # smoother decay
+                exploitation_weight = 1 - exploration_weight
+                mixture_scores = [
+                    -regret_score * exploitation_weight - uncertainty_score * exploration_weight
+                    for regret_score, uncertainty_score in zip(regret_scores, uncertainty_scores)
+                ]
+
+                if self.log:  
+                    wandb.log({
+                        "new/exploration_weight": exploration_weight,
+                        "new/exploitation_weight": exploitation_weight,
+                        #"new/global_step": self.global_step  
+                    })
+
+                # combine metrics for evaluation
+                #mixture_scores = [
+                #    -regret_score * 0.5 - uncertainty_score * 0.5  
+                #    for regret_score, uncertainty_score in zip(regret_scores, uncertainty_scores)
+                #]
+
+                # select best or worst combination of metrics
+                current_candidate_weight = np.argmax(np.array(mixture_scores)) if update_best else np.argmin(np.array(mixture_scores))
+                current_candidate_score = np.max(np.array(mixture_scores)) if update_best else np.min(np.array(mixture_scores))
+
+                # determine best/worst candidate
+                if (update_best and max_score < current_candidate_score) or \
+                (not update_best and max_score > current_candidate_score):
+                    max_score = current_candidate_score
                     best_candidate = (
                         candidate,
                         candidate_tuples[current_candidate_weight][1],
                     )
                     best_eval = last_candidate_eval
-                    best_predicted_eval = predicted_evals[current_candidate_weight]
 
             selected_tasks.append((tuple(best_eval), tuple(best_candidate[1])))
-            # Append current estimate to the estimated front (to compute the next predictions)
-            current_front.append(best_predicted_eval)
+            # self.novelty_search.add_to_archive(best_eval)  # Add to archive for future novelty computation
+            current_front.append(best_eval)
 
-            # Assigns best predicted (weight-agent) pair to the worker
+            # assign best/worst (weight-agent) pair to worker
             copied_agent = deepcopy(best_candidate[0])
             copied_agent.global_step = self.agents[i].global_step
             copied_agent.id = i
             copied_agent.change_weights(deepcopy(best_candidate[1]))
+
+            # best_eval+novelty to be used as fitness
+            novelty_score = self.novelty_search.compute_novelty(best_eval)
+            copied_agent.fitness = 0.2 * np.sum(best_eval) + 0.8 * novelty_score
+
             self.agents[i] = copied_agent
 
-            print(f"Agent #{self.agents[i].id} - weights {best_candidate[1]}")
-            print(
-                f"current eval: {best_eval} - estimated next: {best_predicted_eval} - deltas {(best_predicted_eval - best_eval)}"
-            )
+            print(f"Candidate Tuples: {candidate_tuples}")
+            print(f"Selected Tasks: {selected_tasks}")
+            print(f"Regret Scores: {regret_scores}")
+            print(f"Uncertainty Scores: {uncertainty_scores}")
+
+            if update_best:
+                print(f"Updating Best: Agent #{self.agents[i].id} - weights {best_candidate[1]}")
+                print(
+                    f"current eval: {best_eval} - regret: {np.min(regret_scores)} - uncertainty: {np.min(uncertainty_scores)}"
+                )
+            else:
+                print(f"Updating Worst: Agent #{self.agents[i].id} - weights {best_candidate[1]}")
+                print(
+                    f"current eval: {best_eval} - regret: {np.max(regret_scores)} - uncertainty: {np.max(uncertainty_scores)}"
+                )
+
+    def mutate(self, policy, mutation_rate: float = 0.1):
+        """Apply mutation to a policy by adding random noise."""
+        original_policy = [param.clone() for param in policy]
+        mutated_policy = [
+            param + mutation_rate * th.randn_like(param) for param in policy
+        ]
+
+        # parameter changes
+        mutation_deltas = [
+            th.norm(mutated - original).item() for mutated, original in zip(mutated_policy, original_policy)
+        ]
+
+        # mutation impact
+        if self.log:
+            wandb.log({
+                "new/mutation_parameter_changes": wandb.Histogram(mutation_deltas),
+                "new/mutation_mean_change": sum(mutation_deltas) / len(mutation_deltas)
+            })
+        return mutated_policy
+    
+    def crossover(self, parent1, parent2):
+        """
+        Perform single-point crossover on the parameters of two parents to produce a single child.
+        
+        Args:
+        - parent1: List of tensors representing the parameters of parent 1.
+        - parent2: List of tensors representing the parameters of parent 2.
+
+        Returns:
+        - child: A new child created from the crossover of parent 1 and parent 2.
+        """
+        # number of parameters in both parents is the same
+        assert len(parent1) == len(parent2), "Parents must have the same number of parameters."
+        
+        # crossover point (index) between parameters
+        crossover_point = random.randint(1, len(parent1) - 1)
+        
+        child = []
+        
+        for i in range(len(parent1)):
+            if i < crossover_point:
+                child.append(parent1[i].clone()) 
+            else:
+                child.append(parent2[i].clone()) 
+        
+        # parameter differences between parents
+        parent_differences = [
+            th.norm(param1 - param2).item() for param1, param2 in zip(parent1, parent2)
+        ]
+
+        # diversity introduced by crossover
+        if self.log:
+            wandb.log({
+                "new/crossover_parent_diversity": wandb.Histogram(parent_differences),
+                "new/crossover_mean_diversity": sum(parent_differences) / len(parent_differences)
+            })
+
+        # return single child
+        return child
+    
+    def select_parents(self, num_parents: int = 4) -> List[MOPPO]:
+        """Select top-performing policies for reproduction."""
+        if any(agent.fitness is None for agent in self.agents):
+            raise ValueError("Fitness values are not set for all agents. Check the task weight selection process.")
+
+        # select agents with highest fitness (i.e., a sum closer to 0)
+        top_parents = sorted(self.agents, key=lambda agent: agent.fitness, reverse=True)[:num_parents]
+        print(f"Selected parents based on fitness: {[parent.fitness for parent in top_parents]}")
+        
+        return top_parents
+
+    def replace_weak_policies(self, offspring: List[th.Tensor]):
+        """Replace the weakest policies in the population with new offspring."""
+        weakest_agents = sorted(self.agents, key=lambda agent: agent.fitness)[:len(offspring)]
+        print(weakest_agents)
+        for weak_agent, new_policy in zip(weakest_agents, offspring):
+            th.save(weak_agent.networks.state_dict(), "new_policy.pth")
+            #print(weak_agent)
+            #print(new_policy)
+            new_policy = th.load("new_policy.pth")
+            weak_agent.networks.load_state_dict(new_policy)
+
+    def evolve_population(self):
+        """Evolve the population using recombination and mutation."""
+        for agent in self.agents:
+            if not hasattr(agent, 'fitness') or agent.fitness is None:
+                raise ValueError(f"Agent {agent.id} does not have a valid fitness value. Ensure task weight selection is complete.")
+    
+        # parents: top N policies by fitness
+        parents = self.select_parents()
+        
+        # create offspring using recombination
+        offspring = []
+        for _ in range(self.pop_size // 2):  # offspring pairs
+            # top-4 parents, and from them a random pair of two parents is chosen 
+            # why 4 parents? allowing for greater genetic diversity in the offspring
+            # leading to better exploration of the solution space
+            parent1, parent2 = random.sample(parents, 2)
+
+            parent1_params = parent1.get_network_parameters()
+            parent2_params = parent2.get_network_parameters()
+
+            child = self.crossover(parent1_params, parent2_params)
+            offspring.append(child)
+        
+        # mutation
+        mutated_offspring = [self.mutate(child) for child in offspring]
+        
+        # replace weaker policies with offspring
+        self.replace_weak_policies(mutated_offspring)
 
     def train(
         self,
@@ -645,7 +662,6 @@ class PGMORL(MOAgent):
             evaluations_before_train=current_evaluations,
             ref_point=ref_point,
             known_pareto_front=known_pareto_front,
-            add_to_prediction=False,
         )
         self.start_time = time.time()
 
@@ -665,11 +681,16 @@ class PGMORL(MOAgent):
 
         # Evolution
         # without the 15*, the loop would only run once
-        max_iterations = max(max_iterations, self.warmup_iterations + (27*self.evolutionary_iterations))
+        max_iterations = max(max_iterations, self.warmup_iterations + (self.evolutionary_iterations))
         evolutionary_generation = 1
         while iteration < max_iterations:
+
+
             # Every evolutionary iterations, change the task - weight assignments
-            self.__task_weight_selection(ref_point=ref_point)
+            # self.__task_weight_selection(ref_point=ref_point)
+            self.__policy_selection(total_timesteps, ref_point=ref_point, update_best = False)
+
+
             print(f"Evolutionary generation #{evolutionary_generation}")
             if self.log:
                 wandb.log(
@@ -688,6 +709,9 @@ class PGMORL(MOAgent):
                     )
                 self.__train_all_agents(iteration=iteration, max_iterations=max_iterations)
                 iteration += 1
+
+                self.evolve_population()
+
                 # eval agents eins nach rechts shiften, 
                 # sodass jede evol iteration evaluiert wird?
                 if iteration % 20 == 0:

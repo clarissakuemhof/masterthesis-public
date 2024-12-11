@@ -265,7 +265,7 @@ class MOPPO(MOPolicy):
         gae: bool = True,
         gae_lambda: float = 0.95,
         device: Union[th.device, str] = "cpu",
-        seed: Optional[int] = 1,
+        seed: Optional[int] = 3,
         rng: Optional[np.random.Generator] = None,
     ):
         """Multi-objective PPO.

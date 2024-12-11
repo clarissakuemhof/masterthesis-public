@@ -19,6 +19,7 @@ from morl_baselines.multi_policy.pgmorl.pgmorl import PGMORL
 from morl_baselines.multi_policy.pgmorl.pgmorl_EA import PGMORL_EA
 from morl_baselines.multi_policy.pgmorl.pgmorl_selection import PGMORL_selection
 from morl_baselines.multi_policy.pgmorl.pgmorl_EA_selection import PGMORL_EA_selection
+from morl_baselines.multi_policy.pgmorl.pgmorl_EA_selection_dynamic import PGMORL_EA_selection_dynamic
 
 
 ALGOS = {
@@ -26,6 +27,7 @@ ALGOS = {
     "pgmorl_ea": PGMORL_EA,
     "pgmorl_selection": PGMORL_selection,
     "pgmorl_ea_selection": PGMORL_EA_selection,
+    "pgmorl_ea_selection_dynamic": PGMORL_EA_selection_dynamic,
     #"envelope": Envelope,
     #"gpi_pd_continuous": GPIPDContinuousAction,
     #"gpi_pd_discrete": GPIPD,

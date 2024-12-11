@@ -36,7 +36,7 @@ def random_weights(
 
 
 @lru_cache
-def equally_spaced_weights(dim: int, n: int, seed: int = 42) -> List[np.ndarray]:
+def equally_spaced_weights(dim: int, n: int, seed: int = 1) -> List[np.ndarray]:
     """Generate weight vectors that are equally spaced in the weight simplex.
 
     It uses the Riesz s-Energy method from pymoo: https://pymoo.org/misc/reference_directions.html
