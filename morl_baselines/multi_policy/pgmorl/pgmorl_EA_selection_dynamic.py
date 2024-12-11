@@ -160,9 +160,9 @@ class PGMORL_EA_selection_dynamic(MOAgent):
         origin: np.ndarray,
         num_envs: int = 4,
         pop_size: int = 6,
-        warmup_iterations: int = 2, # default 80
+        warmup_iterations: int = 80, # default 80
         steps_per_iteration: int = 2048,
-        evolutionary_iterations: int = 2, # default 20
+        evolutionary_iterations: int = 20, # default 20
         num_weight_candidates: int = 7,
         num_performance_buffer: int = 100,
         performance_buffer_size: int = 2,
@@ -455,7 +455,7 @@ class PGMORL_EA_selection_dynamic(MOAgent):
                         }
                     )
                 
-                exploration_weight = 0.9 * math.exp(-self.global_step / total_timesteps)  # smoother decay
+                exploration_weight = 0.8 * math.exp(-self.global_step / total_timesteps)  # smoother decay
                 exploitation_weight = 1 - exploration_weight
                 mixture_scores = [
                     -regret_score * exploitation_weight - uncertainty_score * exploration_weight
@@ -681,7 +681,7 @@ class PGMORL_EA_selection_dynamic(MOAgent):
 
         # Evolution
         # without the 15*, the loop would only run once
-        max_iterations = max(max_iterations, self.warmup_iterations + (self.evolutionary_iterations))
+        max_iterations = max(max_iterations, self.warmup_iterations + (27*self.evolutionary_iterations))
         evolutionary_generation = 1
         while iteration < max_iterations:
 
