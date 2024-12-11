@@ -264,7 +264,7 @@ class MOPPO(MOPolicy):
         target_kl: Optional[float] = None,
         gae: bool = True,
         gae_lambda: float = 0.95,
-        device: Union[th.device, str] = "auto",
+        device: Union[th.device, str] = "cpu",
         seed: Optional[int] = 1,
         rng: Optional[np.random.Generator] = None,
     ):
