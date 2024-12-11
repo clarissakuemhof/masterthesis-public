@@ -2,7 +2,7 @@
 
 import argparse
 
-from morl_baselines.multi_policy.capql.capql import CAPQL
+'''from morl_baselines.multi_policy.capql.capql import CAPQL
 from morl_baselines.multi_policy.envelope.envelope import Envelope
 from morl_baselines.multi_policy.gpi_pd.gpi_pd import GPILS, GPIPD
 from morl_baselines.multi_policy.gpi_pd.gpi_pd_continuous_action import (
@@ -14,7 +14,7 @@ from morl_baselines.multi_policy.multi_policy_moqlearning.mp_mo_q_learning impor
     MPMOQLearning,
 )
 from morl_baselines.multi_policy.pareto_q_learning.pql import PQL
-from morl_baselines.multi_policy.pcn.pcn import PCN
+from morl_baselines.multi_policy.pcn.pcn import PCN'''
 from morl_baselines.multi_policy.pgmorl.pgmorl import PGMORL
 from morl_baselines.multi_policy.pgmorl.pgmorl_EA import PGMORL_EA
 from morl_baselines.multi_policy.pgmorl.pgmorl_selection import PGMORL_selection
@@ -26,18 +26,18 @@ ALGOS = {
     "pgmorl_ea": PGMORL_EA,
     "pgmorl_selection": PGMORL_selection,
     "pgmorl_ea_selection": PGMORL_EA_selection,
-    "envelope": Envelope,
-    "gpi_pd_continuous": GPIPDContinuousAction,
-    "gpi_pd_discrete": GPIPD,
-    "gpi_ls_continuous": GPILSContinuousAction,
-    "gpi_ls_discrete": GPILS,
-    "capql": CAPQL,
-    "mpmoql": MPMOQLearning,
-    "pcn": PCN,
-    "pql": PQL,
-    "ols": MPMOQLearning,
-    "gpi-ls": MPMOQLearning,
-    "morld": MORLD,
+    #"envelope": Envelope,
+    #"gpi_pd_continuous": GPIPDContinuousAction,
+    #"gpi_pd_discrete": GPIPD,
+    #"gpi_ls_continuous": GPILSContinuousAction,
+    #"gpi_ls_discrete": GPILS,
+    #"capql": CAPQL,
+    #"mpmoql": MPMOQLearning,
+    #"pcn": PCN,
+    #"pql": PQL,
+    #"ols": MPMOQLearning,
+    #"gpi-ls": MPMOQLearning,
+    #"morld": MORLD,
 }
 
 ENVS_WITH_KNOWN_PARETO_FRONT = [
