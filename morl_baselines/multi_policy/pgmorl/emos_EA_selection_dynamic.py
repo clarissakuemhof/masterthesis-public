@@ -18,6 +18,7 @@ import torch as th
 import wandb
 import random
 #random.seed(1)
+import math
 
 from scipy.optimize import least_squares
 
@@ -141,7 +142,7 @@ class NoveltySearch:
         """Adds a performance evaluation to the Pareto archive."""
         self.archive.add(candidate=None, evaluation=performance)
 
-class PGMORL_EA_selection(MOAgent):
+class PGMORL_EA_selection_dynamic(MOAgent):
     """Prediction Guided Multi-Objective Reinforcement Learning.
 
     Reference: J. Xu, Y. Tian, P. Ma, D. Rus, S. Sueda, and W. Matusik,
@@ -161,7 +162,7 @@ class PGMORL_EA_selection(MOAgent):
         pop_size: int = 6,
         warmup_iterations: int = 80, # default 80
         steps_per_iteration: int = 2048,
-        evolutionary_iterations: int = 20,
+        evolutionary_iterations: int = 20, # default 20
         num_weight_candidates: int = 7,
         num_performance_buffer: int = 100,
         performance_buffer_size: int = 2,
@@ -171,7 +172,7 @@ class PGMORL_EA_selection(MOAgent):
         env=None,
         gamma: float = 0.995,
         project_name: str = "MORL-baselines",
-        experiment_name: str = "PGMORL_EA_selection",
+        experiment_name: str = "EMOS_EA_selection_dynamic",
         wandb_entity: Optional[str] = None,
         seed: Optional[int] = None,
         log: bool = True,
@@ -403,7 +404,7 @@ class PGMORL_EA_selection(MOAgent):
                 ref_front=known_pareto_front,
             )
     
-    def __policy_selection(self, ref_point: np.ndarray, update_best: bool = True):
+    def __policy_selection(self, total_timesteps, ref_point: np.ndarray, update_best: bool = True):
         """
         Chooses agents and weights to train at the next iteration based on regret and uncertainty.
         Args:
@@ -453,12 +454,26 @@ class PGMORL_EA_selection(MOAgent):
                             #"new/average_mixture_metrics": np.mean(mixture_scores) 
                         }
                     )
-
-                # combine metrics for evaluation
+                
+                exploration_weight = 0.8 * math.exp(-self.global_step / total_timesteps)  # smoother decay
+                exploitation_weight = 1 - exploration_weight
                 mixture_scores = [
-                    -regret_score * 0.5 - uncertainty_score * 0.5  
+                    -regret_score * exploitation_weight - uncertainty_score * exploration_weight
                     for regret_score, uncertainty_score in zip(regret_scores, uncertainty_scores)
                 ]
+
+                if self.log:  
+                    wandb.log({
+                        "new/exploration_weight": exploration_weight,
+                        "new/exploitation_weight": exploitation_weight,
+                        #"new/global_step": self.global_step  
+                    })
+
+                # combine metrics for evaluation
+                #mixture_scores = [
+                #    -regret_score * 0.5 - uncertainty_score * 0.5  
+                #    for regret_score, uncertainty_score in zip(regret_scores, uncertainty_scores)
+                #]
 
                 # select best or worst combination of metrics
                 current_candidate_weight = np.argmax(np.array(mixture_scores)) if update_best else np.argmin(np.array(mixture_scores))
@@ -673,7 +688,7 @@ class PGMORL_EA_selection(MOAgent):
 
             # Every evolutionary iterations, change the task - weight assignments
             # self.__task_weight_selection(ref_point=ref_point)
-            self.__policy_selection(ref_point=ref_point, update_best = False)
+            self.__policy_selection(total_timesteps, ref_point=ref_point, update_best = False)
 
 
             print(f"Evolutionary generation #{evolutionary_generation}")

@@ -18,8 +18,8 @@ from morl_baselines.multi_policy.pcn.pcn import PCN'''
 from morl_baselines.multi_policy.pgmorl.pgmorl import PGMORL
 from morl_baselines.multi_policy.pgmorl.pgmorl_EA import PGMORL_EA
 from morl_baselines.multi_policy.pgmorl.pgmorl_selection import PGMORL_selection
-from morl_baselines.multi_policy.pgmorl.pgmorl_EA_selection import PGMORL_EA_selection
-from morl_baselines.multi_policy.pgmorl.pgmorl_EA_selection_dynamic import PGMORL_EA_selection_dynamic
+from morl_baselines.multi_policy.pgmorl.emos_EA_selection import PGMORL_EA_selection
+from morl_baselines.multi_policy.pgmorl.emos_EA_selection_dynamic import PGMORL_EA_selection_dynamic
 
 
 ALGOS = {
