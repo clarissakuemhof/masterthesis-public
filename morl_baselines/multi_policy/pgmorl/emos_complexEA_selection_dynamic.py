@@ -160,7 +160,7 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
         origin: np.ndarray,
         num_envs: int = 4,
         pop_size: int = 6,
-        warmup_iterations: int = 80, # default 80
+        warmup_iterations: int = 2, # default 80
         steps_per_iteration: int = 2048,
         evolutionary_iterations: int = 20, # default 20
         num_weight_candidates: int = 7,
@@ -525,7 +525,7 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
         """Apply mutation to a policy by adding random noise."""
 
         # adaptive mutation rate
-        adjusted_mutation_rate = base_mutation_rate / (1 + self.fitness)  # higher fitness -> smaller mutation rate
+        adjusted_mutation_rate = base_mutation_rate / (1 + policy.fitness)  # higher fitness -> smaller mutation rate
 
         original_policy = [param.clone() for param in policy]
         mutated_policy = [
