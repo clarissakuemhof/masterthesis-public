@@ -142,7 +142,7 @@ class NoveltySearch:
         """Adds a performance evaluation to the Pareto archive."""
         self.archive.add(candidate=None, evaluation=performance)
 
-class PGMORL_EA_selection_dynamic(MOAgent):
+class EMOS_EA_selection_dynamic(MOAgent):
     """Prediction Guided Multi-Objective Reinforcement Learning.
 
     Reference: J. Xu, Y. Tian, P. Ma, D. Rus, S. Sueda, and W. Matusik,
