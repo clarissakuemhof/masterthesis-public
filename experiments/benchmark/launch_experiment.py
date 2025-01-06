@@ -120,7 +120,7 @@ def main():
         if len(wandb_tag) > 0:
             os.environ["WANDB_TAGS"] = wandb_tag
 
-    if args.algo in ("pgmorl", "pgmorl_ea", "pgmorl_selection", "emos_ea_selection", "emos_ea_selection_dynamic"):
+    if args.algo in ("pgmorl", "pgmorl_ea", "pgmorl_selection", "emos_ea_selection", "emos_ea_selection_dynamic", "emos_complexea_selection_dynamic"):
         # PGMORL creates its own environments because it requires wrappers
         print(f"Instantiating {args.algo} on {args.env_id}")
         eval_env = mo_gym.make(args.env_id)

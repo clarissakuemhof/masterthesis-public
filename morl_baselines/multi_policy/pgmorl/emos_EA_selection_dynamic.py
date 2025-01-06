@@ -597,10 +597,10 @@ class EMOS_EA_selection_dynamic(MOAgent):
         weakest_agents = sorted(self.agents, key=lambda agent: agent.fitness)[:len(offspring)]
         print(weakest_agents)
         for weak_agent, new_policy in zip(weakest_agents, offspring):
-            th.save(weak_agent.networks.state_dict(), "new_policy.pth")
+            th.save(weak_agent.networks.state_dict(), "new_policy1.pth")
             #print(weak_agent)
             #print(new_policy)
-            new_policy = th.load("new_policy.pth")
+            new_policy = th.load("new_policy1.pth")
             weak_agent.networks.load_state_dict(new_policy)
 
     def evolve_population(self):

@@ -142,7 +142,7 @@ class NoveltySearch:
         """Adds a performance evaluation to the Pareto archive."""
         self.archive.add(candidate=None, evaluation=performance)
 
-class PGMORL_EA_selection_dynamic(MOAgent):
+class EMOS_complexEA_selection_dynamic(MOAgent):
     """Prediction Guided Multi-Objective Reinforcement Learning.
 
     Reference: J. Xu, Y. Tian, P. Ma, D. Rus, S. Sueda, and W. Matusik,
@@ -172,7 +172,7 @@ class PGMORL_EA_selection_dynamic(MOAgent):
         env=None,
         gamma: float = 0.995,
         project_name: str = "MORL-baselines",
-        experiment_name: str = "PGMORL_EA_selection_dynamic",
+        experiment_name: str = "EMOS_complexEA_selection_dynamic",
         wandb_entity: Optional[str] = None,
         seed: Optional[int] = None,
         log: bool = True,
@@ -521,11 +521,15 @@ class PGMORL_EA_selection_dynamic(MOAgent):
                     f"current eval: {best_eval} - regret: {np.max(regret_scores)} - uncertainty: {np.max(uncertainty_scores)}"
                 )
 
-    def mutate(self, policy, mutation_rate: float = 0.1):
+    def mutate(self, policy, base_mutation_rate: float = 0.1):
         """Apply mutation to a policy by adding random noise."""
+
+        # adaptive mutation rate
+        adjusted_mutation_rate = base_mutation_rate / (1 + self.fitness)  # higher fitness -> smaller mutation rate
+
         original_policy = [param.clone() for param in policy]
         mutated_policy = [
-            param + mutation_rate * th.randn_like(param) for param in policy
+            param + adjusted_mutation_rate * th.randn_like(param) for param in policy
         ]
 
         # parameter changes
@@ -541,30 +545,25 @@ class PGMORL_EA_selection_dynamic(MOAgent):
             })
         return mutated_policy
     
-    def crossover(self, parent1, parent2):
-        """
-        Perform single-point crossover on the parameters of two parents to produce a single child.
-        
-        Args:
-        - parent1: List of tensors representing the parameters of parent 1.
-        - parent2: List of tensors representing the parameters of parent 2.
+    def crossover(self, parent1, parent2, num_points: int = 2):
 
-        Returns:
-        - child: A new child created from the crossover of parent 1 and parent 2.
-        """
+        """multi-point crossover"""
         # number of parameters in both parents is the same
         assert len(parent1) == len(parent2), "Parents must have the same number of parameters."
         
         # crossover point (index) between parameters
-        crossover_point = random.randint(1, len(parent1) - 1)
-        
+        crossover_points = sorted(random.sample(range(1, len(parent1)), num_points))
+    
         child = []
+        toggle = False
         
         for i in range(len(parent1)):
-            if i < crossover_point:
-                child.append(parent1[i].clone()) 
+            if i in crossover_points:
+                toggle = not toggle
+            if toggle:
+                child.append(parent1[i].clone())
             else:
-                child.append(parent2[i].clone()) 
+                child.append(parent2[i].clone())
         
         # parameter differences between parents
         parent_differences = [
@@ -597,10 +596,10 @@ class PGMORL_EA_selection_dynamic(MOAgent):
         weakest_agents = sorted(self.agents, key=lambda agent: agent.fitness)[:len(offspring)]
         print(weakest_agents)
         for weak_agent, new_policy in zip(weakest_agents, offspring):
-            th.save(weak_agent.networks.state_dict(), "new_policy.pth")
+            th.save(weak_agent.networks.state_dict(), "new_policy3.pth")
             #print(weak_agent)
             #print(new_policy)
-            new_policy = th.load("new_policy.pth")
+            new_policy = th.load("new_policy3.pth")
             weak_agent.networks.load_state_dict(new_policy)
 
     def evolve_population(self):
