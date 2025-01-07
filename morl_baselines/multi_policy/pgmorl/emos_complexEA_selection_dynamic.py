@@ -160,7 +160,7 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
         origin: np.ndarray,
         num_envs: int = 4,
         pop_size: int = 6,
-        warmup_iterations: int = 2, # default 80
+        warmup_iterations: int = 80, # default 80
         steps_per_iteration: int = 2048,
         evolutionary_iterations: int = 20, # default 20
         num_weight_candidates: int = 7,
