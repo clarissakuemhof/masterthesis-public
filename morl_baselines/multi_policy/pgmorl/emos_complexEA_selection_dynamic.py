@@ -623,7 +623,7 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
             parent2_params = parent2.get_network_parameters()
 
             child = self.crossover(parent1_params, parent2_params)
-            offspring.append(child, parent1.fitness)
+            offspring.append((child, parent1.fitness))
         
         # mutation
         # mutated_offspring = [self.mutate(child) for child in offspring]
