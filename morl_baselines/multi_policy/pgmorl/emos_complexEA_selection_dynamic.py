@@ -521,11 +521,11 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
                     f"current eval: {best_eval} - regret: {np.max(regret_scores)} - uncertainty: {np.max(uncertainty_scores)}"
                 )
 
-    def mutate(self, policy, base_mutation_rate: float = 0.1):
+    def mutate(self, policy, fitness: float, base_mutation_rate: float = 0.1):
         """Apply mutation to a policy by adding random noise."""
 
         # adaptive mutation rate
-        adjusted_mutation_rate = base_mutation_rate / (1 + policy.fitness)  # higher fitness -> smaller mutation rate
+        adjusted_mutation_rate = base_mutation_rate / (1 + fitness)  # higher fitness -> smaller mutation rate
 
         original_policy = [param.clone() for param in policy]
         mutated_policy = [
@@ -623,10 +623,11 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
             parent2_params = parent2.get_network_parameters()
 
             child = self.crossover(parent1_params, parent2_params)
-            offspring.append(child)
+            offspring.append(child, parent1.fitness)
         
         # mutation
-        mutated_offspring = [self.mutate(child) for child in offspring]
+        # mutated_offspring = [self.mutate(child) for child in offspring]
+        mutated_offspring = [self.mutate(child, fitness) for child, fitness in offspring]
         
         # replace weaker policies with offspring
         self.replace_weak_policies(mutated_offspring)
