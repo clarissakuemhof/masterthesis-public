@@ -22,6 +22,7 @@ from morl_baselines.multi_policy.pgmorl.emos_EA_selection import EMOS_EA_selecti
 from morl_baselines.multi_policy.pgmorl.emos_EA_selection_dynamic import EMOS_EA_selection_dynamic
 from morl_baselines.multi_policy.pgmorl.emos_complexEA_selection_dynamic import EMOS_complexEA_selection_dynamic
 
+from morl_baselines.multi_policy.gpi_pd.gpi_pd_continuous_action import GPILSContinuousAction
 
 ALGOS = {
     "pgmorl": PGMORL,
@@ -33,7 +34,7 @@ ALGOS = {
     #"envelope": Envelope,
     #"gpi_pd_continuous": GPIPDContinuousAction,
     #"gpi_pd_discrete": GPIPD,
-    #"gpi_ls_continuous": GPILSContinuousAction,
+    "gpi_ls_continuous": GPILSContinuousAction,
     #"gpi_ls_discrete": GPILS,
     #"capql": CAPQL,
     #"mpmoql": MPMOQLearning,
