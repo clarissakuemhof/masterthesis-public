@@ -4,7 +4,7 @@ import random
 from copy import deepcopy
 from typing import List, Optional
 
-#import cdd
+import cdd
 import cvxpy as cp
 import numpy as np
 from cvxpy import SolverError
