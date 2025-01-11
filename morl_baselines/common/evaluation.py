@@ -177,13 +177,10 @@ def log_all_multi_policy_metrics(
 
     wandb.log(
         {
-            #"eval/hypervolume": hv,
-            "Hypervolume (↑)": hv,
-            #"eval/eum": eum,
-            "Expected Utility (↑)": eum,
+            "eval/hypervolume": hv,
+            "eval/eum": eum,
             "eval/cardinality": card,
-            #"eval/sparsity": spar,
-            "Sparsity (↓)": spar,
+            "eval/sparsity": spar,
             "global_step": global_step,
         },
         commit=False,
