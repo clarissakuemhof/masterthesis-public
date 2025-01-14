@@ -187,7 +187,8 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
 
         recombination_rate: float = 0.7,
         num_parents: int = 4,
-        novelty_weight: float = 0.5
+        novelty_weight: float = 0.5,
+        base_mutation_rate: float = 0.1
 
         ##########################################################
     ):
@@ -246,6 +247,7 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
         self.recombination_rate = recombination_rate
         self.num_parents = num_parents
         self.novelty_weight = novelty_weight
+        self.base_mutation_rate = base_mutation_rate
 
         self.pop_size = pop_size
         self.warmup_iterations = warmup_iterations
@@ -375,7 +377,8 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
 
             "recombination_rate": self.recombination_rate,
             "num_parents": self.num_parents,
-            "novelty_weight": self.novelty_weight
+            "novelty_weight": self.novelty_weight,
+            "base_mutation_rate": self.base_mutation_rate
         }
 
     def __train_all_agents(self, iteration: int, max_iterations: int):
@@ -532,12 +535,17 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
         """Apply mutation to a policy by adding random noise."""
 
         # adaptive mutation rate
-        adjusted_mutation_rate = base_mutation_rate / (1 + fitness)  # higher fitness -> smaller mutation rate
+        # adjusted_mutation_rate = base_mutation_rate / (1 + fitness)  # higher fitness -> smaller mutation rate
+        '''mutated_policy = [
+            param + adjusted_mutation_rate * th.randn_like(param) for param in policy
+        ]'''
+
+        # static mutation rate
+        mutated_policy = [
+            param + base_mutation_rate * th.randn_like(param) for param in policy
+        ]
 
         original_policy = [param.clone() for param in policy]
-        mutated_policy = [
-            param + adjusted_mutation_rate * th.randn_like(param) for param in policy
-        ]
 
         # parameter changes
         mutation_deltas = [
