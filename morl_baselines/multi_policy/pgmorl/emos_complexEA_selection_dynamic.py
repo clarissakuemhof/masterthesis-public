@@ -712,9 +712,9 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
         while iteration < max_iterations:
 
 
-            # Every evolutionary iterations, change the task - weight assignments
+            # Every evolutionary generation, change the task - weight assignments
             # self.__task_weight_selection(ref_point=ref_point)
-            self.__policy_selection(total_timesteps, ref_point=ref_point, update_best = False)
+            # self.__policy_selection(total_timesteps, ref_point=ref_point, update_best = False)
 
 
             print(f"Evolutionary generation #{evolutionary_generation}")
@@ -733,6 +733,9 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
                             "global_step": self.global_step,
                         },
                     )
+                
+                self.__policy_selection(total_timesteps, ref_point=ref_point, update_best = False)
+
                 self.__train_all_agents(iteration=iteration, max_iterations=max_iterations)
                 iteration += 1
 
