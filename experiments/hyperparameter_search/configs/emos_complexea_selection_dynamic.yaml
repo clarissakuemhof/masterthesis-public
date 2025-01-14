@@ -7,19 +7,19 @@ parameters:
   #  distribution: categorical
   #  values: [4, 6, 8, 16, 32, 64]
   recombination_rate:
-    distribution: int_uniform
+    distribution: float_uniform
     min: 0.1
     max: 0.9
   num_parents: # elitism
     distribution: categorical
     values: [2, 4, 6]
   novelty_weight:
-    distribution: int_uniform
+    distribution: float_uniform
     min: 0.1
     max: 0.9
-  env_id:
-    distribution: categorical
-    values: ["mo-halfcheetah-v4", "mo-hopper-2d-v4"]
+  #env_id:
+  #  distribution: categorical
+  #  values: ["mo-halfcheetah-v4", "mo-hopper-2d-v4"]
 
 
   
