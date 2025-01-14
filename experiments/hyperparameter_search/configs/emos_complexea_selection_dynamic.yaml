@@ -10,6 +10,10 @@ parameters:
     distribution: float_uniform
     min: 0.1
     max: 0.9
+  base_mutation_rate:
+    distribution: float_uniform
+    min: 0.1
+    max: 0.9
   num_parents: # elitism
     distribution: categorical
     values: [2, 4, 6]
