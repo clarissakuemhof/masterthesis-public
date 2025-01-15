@@ -102,6 +102,7 @@ def train(worker_data: WorkerInitData) -> WorkerDoneData:
         # Launch the agent training
         print(f"Worker {worker_num}: Seed {seed}. Training agent...")
         algo.train(
+            total_timesteps=5000000,
             eval_env=eval_env,
             ref_point=np.array(args.ref_point),
             known_pareto_front=None,
