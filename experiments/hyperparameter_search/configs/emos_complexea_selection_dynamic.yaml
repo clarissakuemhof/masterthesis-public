@@ -3,9 +3,6 @@ metric:
   goal: maximize
   name: avg_hypervolume
 parameters:
-  algo:
-    values:
-      - emos_complexea_selection_dynamic
   #pop_size:
   #  distribution: categorical
   #  values: [4, 6, 8, 16, 32, 64]
@@ -14,13 +11,6 @@ parameters:
       - 0.01
       - 0.05
       - 0.8
-  env_id:
-    values:
-      - mo-halfcheetah-v4
-      - mo-hopper-2d-v4
-  gamma:
-    values:
-      - 0.99
   novelty_weight:
     values:
       - 0.3
@@ -38,9 +28,3 @@ parameters:
       - 0.01
       - 0.05
       - 0.8
-  ref_point:
-    values: [[-100,-100]]
-  seed:
-    values:
-      - 4
-      - 5

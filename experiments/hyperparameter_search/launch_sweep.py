@@ -42,7 +42,7 @@ def parse_args():
     parser.add_argument("--wandb-entity", type=str, help="Wandb entity to use for the sweep", required=False)
     parser.add_argument("--project-name", type=str, help="Project name to use for the sweep", default="MORL-baselines")
 
-    parser.add_argument("--sweep-count", type=int, help="Number of trials to do in the sweep worker", default=5)
+    parser.add_argument("--sweep-count", type=int, help="Number of trials to do in the sweep worker", default=10)
     parser.add_argument("--num-seeds", type=int, help="Number of seeds to use for the sweep", default=2)
 
     parser.add_argument(
