@@ -1,0 +1,27 @@
+method: bayes
+metric:
+  goal: maximize
+  name: avg_hypervolume
+parameters:
+  #pop_size:
+  #  distribution: categorical
+  #  values: [4, 6, 8, 16, 32, 64]
+  base_mutation_rate:
+    distribution: uniform
+    min: 0.0
+    max: 1.0
+  novelty_weight:
+    distribution: uniform
+    min: 0.0
+    max: 1.0
+  num_parents:
+    values:
+      - 2
+      - 4
+  #total_timesteps:
+  #  values:
+  #    - 5000000
+  recombination_rate:
+    distribution: uniform
+    min: 0.0
+    max: 1.0
