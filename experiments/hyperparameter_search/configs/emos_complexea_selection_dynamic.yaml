@@ -20,7 +20,7 @@ parameters:
     values:
       - 2
       - 4
-  num_timesteps:
+  total_timesteps:
     values:
       - 5000000
   recombination_rate:
