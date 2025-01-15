@@ -105,7 +105,7 @@ def train(worker_data: WorkerInitData) -> WorkerDoneData:
             eval_env=eval_env,
             ref_point=np.array(args.ref_point),
             known_pareto_front=None,
-            total_timesteps=args.total_timesteps,
+            #total_timesteps=args.total_timesteps,
             **args.train_hyperparams,
         )
 
