@@ -1,30 +1,21 @@
-method: bayes
+method: grid
 metric:
   goal: maximize
   name: avg_hypervolume
 parameters:
-  #pop_size:
-  #  distribution: categorical
-  #  values: [4, 6, 8, 16, 32, 64]
+  pop_size:
+    distribution: categorical
+    values: [4, 6, 8, 16, 32, 64]
   base_mutation_rate:
     values:
-      - 0.01
       - 0.05
       - 0.8
   novelty_weight:
-    values:
-      - 0.3
-      - 0.5
-      - 0.9
+    value: 0.8
   num_parents:
-    values:
-      - 2
-      - 4
+    value: 2
   #total_timesteps:
   #  values:
   #    - 5000000
   recombination_rate:
-    values:
-      - 0.01
-      - 0.05
-      - 0.8
+    value: 0.8
