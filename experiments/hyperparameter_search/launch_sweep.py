@@ -156,18 +156,18 @@ def main():
             )
 
         # Get results from workers
-        results = [future.result() for future in futures]
+        # results = [future.result() for future in futures]
 
     # Get the hypervolume from the results
-    hypervolume_metrics = [result.hypervolume for result in results]
-    print(f"Hypervolumes of the sweep {sweep_id}: {hypervolume_metrics}")
+    # hypervolume_metrics = [result.hypervolume for result in results]
+    # print(f"Hypervolumes of the sweep {sweep_id}: {hypervolume_metrics}")
 
     # Compute the average hypervolume
-    average_hypervolume = sum(hypervolume_metrics) / len(hypervolume_metrics)
-    print(f"Average hypervolume of the sweep {sweep_id}: {average_hypervolume}")
+    # average_hypervolume = sum(hypervolume_metrics) / len(hypervolume_metrics)
+    # print(f"Average hypervolume of the sweep {sweep_id}: {average_hypervolume}")
 
     # Log the average hypervolume to the sweep run
-    sweep_run.log(dict(avg_hypervolume=average_hypervolume))
+    # sweep_run.log(dict(avg_hypervolume=average_hypervolume))
     wandb.finish()
 
 
