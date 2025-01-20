@@ -5,7 +5,8 @@ metric:
 parameters:
   pop_size:
     distribution: categorical
-    values: [4, 6, 8, 16, 32, 64]
+    #values: [4, 6, 8, 16, 32, 64]
+    values: [2, 4, 6]
   base_mutation_rate:
     values:
       - 0.05
