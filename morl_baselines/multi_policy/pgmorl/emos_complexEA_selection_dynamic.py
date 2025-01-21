@@ -188,7 +188,9 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
         recombination_rate: float = 0.7,
         num_parents: int = 4,
         novelty_weight: float = 0.5,
-        base_mutation_rate: float = 0.1
+        base_mutation_rate: float = 0.1,
+        adaptive_mutation: bool = True,
+        adaptive_novelty: bool = True
 
         ##########################################################
     ):
@@ -248,6 +250,8 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
         self.num_parents = num_parents
         self.novelty_weight = novelty_weight
         self.base_mutation_rate = base_mutation_rate
+        self.adaptive_mutation = adaptive_mutation
+        self.adaptive_novelty = adaptive_novelty
 
         self.pop_size = pop_size
         self.warmup_iterations = warmup_iterations
@@ -378,7 +382,9 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
             "recombination_rate": self.recombination_rate,
             "num_parents": self.num_parents,
             "novelty_weight": self.novelty_weight,
-            "base_mutation_rate": self.base_mutation_rate
+            "base_mutation_rate": self.base_mutation_rate,
+            "adaptive_mutation": self.adaptive_mutation,
+            "adaptive_novelty": self.adaptive_novelty
         }
 
     def __train_all_agents(self, iteration: int, max_iterations: int):
