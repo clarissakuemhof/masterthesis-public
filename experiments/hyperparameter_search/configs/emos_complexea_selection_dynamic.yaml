@@ -5,8 +5,19 @@ metric:
 parameters:
   pop_size:
     distribution: categorical
-    #values: [4, 6, 8, 16, 32, 64]
-    values: [2, 4, 6]
+    # values: [4, 6, 8, 16, 32, 64]
+    # values: [2, 4, 6]
+    value: 64
+
+########################
+  num_envs:
+    value: 32
+  steps_per_iteration: 
+    value: 4096
+  num_weight_candidates:
+    value: 12
+########################
+
   base_mutation_rate:
     values:
       - 0.05
