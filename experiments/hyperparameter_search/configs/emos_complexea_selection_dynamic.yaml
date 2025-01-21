@@ -4,28 +4,16 @@ metric:
   name: avg_hypervolume
 parameters:
   pop_size:
-    # distribution: categorical
-    # values: [4, 6, 8, 16, 32, 64]
-    # values: [2, 4, 6]
-    value: 64
-########################
-  num_envs:
-    value: 32
-  steps_per_iteration: 
-    value: 4096
-  num_weight_candidates:
-    value: 12
-########################
+    value: 4
   base_mutation_rate:
-    values:
-      - 0.05
-      - 0.8
+    value: 0.05
+  adaptive_mutation:
+    [True, False]
   novelty_weight:
     value: 0.8
+  adaptive_novelty:
+    [True, False]
   num_parents:
     value: 2
-  #total_timesteps:
-  #  values:
-  #    - 5000000
   recombination_rate:
     value: 0.8

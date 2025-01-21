@@ -414,7 +414,7 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
                 ref_front=known_pareto_front,
             )
     
-    def __policy_selection(self, total_timesteps, ref_point: np.ndarray, update_best: bool = True, novelty_weight: float=0.5):
+    def __policy_selection(self, total_timesteps, ref_point: np.ndarray, update_best: bool = True, novelty_weight: float=0.8, adaptive_novelty = True):
         """
         Chooses agents and weights to train at the next iteration based on regret and uncertainty.
         Args:
@@ -511,7 +511,13 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
 
             # best_eval+novelty to be used as fitness
             novelty_score = self.novelty_search.compute_novelty(best_eval)
-            copied_agent.fitness = (1-novelty_weight) * np.sum(best_eval) + novelty_weight * novelty_score
+            
+            if adaptive_novelty == False:
+                copied_agent.fitness = (1-novelty_weight) * np.sum(best_eval) + novelty_weight * novelty_score
+            else:
+                ### adaptive novelty weight ###
+                adaptive_novelty_weight = 0.8 * math.exp(-self.global_step / total_timesteps)  # decaying novelty weight over time
+                copied_agent.fitness = (1 - adaptive_novelty_weight) * np.sum(best_eval) + adaptive_novelty_weight * novelty_score
 
             self.agents[i] = copied_agent
 
@@ -531,19 +537,20 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
                     f"current eval: {best_eval} - regret: {np.max(regret_scores)} - uncertainty: {np.max(uncertainty_scores)}"
                 )
 
-    def mutate(self, policy, fitness: float, base_mutation_rate: float = 0.1):
+    def mutate(self, policy, fitness: float, base_mutation_rate: float = 0.1, adaptive_mutation = True):
         """Apply mutation to a policy by adding random noise."""
 
-        # adaptive mutation rate
-        # adjusted_mutation_rate = base_mutation_rate / (1 + fitness)  # higher fitness -> smaller mutation rate
-        '''mutated_policy = [
-            param + adjusted_mutation_rate * th.randn_like(param) for param in policy
-        ]'''
-
-        # static mutation rate
-        mutated_policy = [
-            param + base_mutation_rate * th.randn_like(param) for param in policy
-        ]
+        if adaptive_mutation == True:
+            # adaptive mutation rate
+            adjusted_mutation_rate = base_mutation_rate / (1 + fitness)  # higher fitness -> smaller mutation rate
+            mutated_policy = [
+                param + adjusted_mutation_rate * th.randn_like(param) for param in policy
+            ]
+        else:
+            # static mutation rate
+            mutated_policy = [
+                param + base_mutation_rate * th.randn_like(param) for param in policy
+            ]
 
         original_policy = [param.clone() for param in policy]
 
