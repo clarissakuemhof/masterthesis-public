@@ -4,7 +4,7 @@ metric:
   name: avg_hypervolume
 parameters:
   pop_size:
-    distribution: categorical
+    # distribution: categorical
     # values: [4, 6, 8, 16, 32, 64]
     # values: [2, 4, 6]
     value: 64
