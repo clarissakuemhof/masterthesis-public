@@ -13,7 +13,7 @@ parameters:
   novelty_weight:
     value: 0.8
   adaptive_novelty:
-    values: True
+    value: True
     #values: [True, False]
   num_parents:
     value: 2
