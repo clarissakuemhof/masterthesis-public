@@ -190,7 +190,8 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
         novelty_weight: float = 0.5,
         base_mutation_rate: float = 0.1,
         adaptive_mutation: bool = True,
-        adaptive_novelty: bool = True
+        adaptive_novelty: bool = True,
+        update_best: bool = True
 
         ##########################################################
     ):
@@ -252,6 +253,7 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
         self.base_mutation_rate = base_mutation_rate
         self.adaptive_mutation = adaptive_mutation
         self.adaptive_novelty = adaptive_novelty
+        self.update_best = update_best
 
         self.pop_size = pop_size
         self.warmup_iterations = warmup_iterations
@@ -384,7 +386,8 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
             "novelty_weight": self.novelty_weight,
             "base_mutation_rate": self.base_mutation_rate,
             "adaptive_mutation": self.adaptive_mutation,
-            "adaptive_novelty": self.adaptive_novelty
+            "adaptive_novelty": self.adaptive_novelty,
+            "update_best": self.update_best
         }
 
     def __train_all_agents(self, iteration: int, max_iterations: int):
