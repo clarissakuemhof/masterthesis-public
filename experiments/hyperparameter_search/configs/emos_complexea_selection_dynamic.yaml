@@ -8,11 +8,13 @@ parameters:
   base_mutation_rate:
     value: 0.05
   adaptive_mutation:
-    values: [True, False]
+    value: [True]
+    #values: [True, False]
   novelty_weight:
     value: 0.8
   adaptive_novelty:
-    values: [True, False]
+    value: [True]
+    #values: [True, False]
   num_parents:
     value: 2
   recombination_rate:
