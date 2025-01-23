@@ -4,7 +4,7 @@ metric:
   name: avg_hypervolume
 parameters:
   pop_size:
-    value: 32
+    value: 4
   base_mutation_rate:
     value: 0.05
   adaptive_mutation:
@@ -18,7 +18,4 @@ parameters:
   recombination_rate:
     value: 0.8
   update_best:
-    values: [True, False]
-  delta_weight:
-    # fix the value for now as delta weight = 1 / (popsize-1)
-    value: 0.032258065
+    value: True

@@ -162,7 +162,7 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
         env=None,
         gamma: float = 0.995,
         project_name: str = "MORL-baselines",
-        experiment_name: str = "EMOS_FINAL",
+        experiment_name: str = "EMOS",
         wandb_entity: Optional[str] = None,
         seed: Optional[int] = None,
         log: bool = True,

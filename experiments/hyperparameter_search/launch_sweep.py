@@ -43,10 +43,10 @@ def parse_args():
     parser.add_argument("--project-name", type=str, help="Project name to use for the sweep", default="MORL-baselines")
 
     parser.add_argument("--sweep-count", type=int, help="Number of trials to do in the sweep worker", default=10)
-    parser.add_argument("--num-seeds", type=int, help="Number of seeds to use for the sweep", default=2)
+    parser.add_argument("--num-seeds", type=int, help="Number of seeds to use for the sweep", default=8)
 
     parser.add_argument(
-        "--seed", type=int, help="Random seed to start from, seeds will be in [seed, seed+num-seeds)", default=3
+        "--seed", type=int, help="Random seed to start from, seeds will be in [seed, seed+num-seeds)", default=2
     )
 
     parser.add_argument(
