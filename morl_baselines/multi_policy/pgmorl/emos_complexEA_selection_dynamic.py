@@ -749,9 +749,9 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
                             "global_step": self.global_step,
                         },
                     )
-                
-                self.__policy_selection(total_timesteps, ref_point=ref_point, update_best = False)
 
+                self.__policy_selection(total_timesteps, ref_point=ref_point, update_best = False)
+             
                 self.__train_all_agents(iteration=iteration, max_iterations=max_iterations)
                 iteration += 1
 

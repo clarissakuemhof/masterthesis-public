@@ -143,16 +143,6 @@ class NoveltySearch:
         self.archive.add(candidate=None, evaluation=performance)
 
 class EMOS_EA_selection_dynamic(MOAgent):
-    """Prediction Guided Multi-Objective Reinforcement Learning.
-
-    Reference: J. Xu, Y. Tian, P. Ma, D. Rus, S. Sueda, and W. Matusik,
-    “Prediction-Guided Multi-Objective Reinforcement Learning for Continuous Robot Control,”
-    in Proceedings of the 37th International Conference on Machine Learning,
-    Nov. 2020, pp. 10607–10616. Available: https://proceedings.mlr.press/v119/xu20h.html
-
-    Paper: https://people.csail.mit.edu/jiex/papers/PGMORL/paper.pdf
-    Supplementary materials: https://people.csail.mit.edu/jiex/papers/PGMORL/supp.pdf
-    """
 
     def __init__(
         self,
@@ -172,7 +162,7 @@ class EMOS_EA_selection_dynamic(MOAgent):
         env=None,
         gamma: float = 0.995,
         project_name: str = "MORL-baselines",
-        experiment_name: str = "EMOS_EA_selection_dynamic",
+        experiment_name: str = "EMOS_NOcomplexEA_optimized",
         wandb_entity: Optional[str] = None,
         seed: Optional[int] = None,
         log: bool = True,
@@ -192,6 +182,18 @@ class EMOS_EA_selection_dynamic(MOAgent):
         gae_lambda: float = 0.95,
         device: Union[th.device, str] = "auto",
         group: Optional[str] = None,
+
+        ############## EVOLUTIONARY HYPERPARAMETERS ##############
+
+        recombination_rate: float = 0.7,
+        num_parents: int = 4,
+        novelty_weight: float = 0.5,
+        base_mutation_rate: float = 0.1,
+        #adaptive_mutation: bool = True,
+        #adaptive_novelty: bool = True,
+        update_best: bool = True
+
+        ##########################################################
     ):
         """Initializes the PGMORL agent.
 
@@ -244,6 +246,15 @@ class EMOS_EA_selection_dynamic(MOAgent):
         self.gamma = gamma
 
         # EA parameters
+
+        self.recombination_rate = recombination_rate
+        self.num_parents = num_parents
+        self.novelty_weight = novelty_weight
+        self.base_mutation_rate = base_mutation_rate
+        #self.adaptive_mutation = adaptive_mutation
+        #self.adaptive_novelty = adaptive_novelty
+        self.update_best = update_best
+
         self.pop_size = pop_size
         self.warmup_iterations = warmup_iterations
         self.steps_per_iteration = steps_per_iteration
@@ -369,6 +380,14 @@ class EMOS_EA_selection_dynamic(MOAgent):
             "clip_vloss": self.clip_vloss,
             "gae": self.gae,
             "gae_lambda": self.gae_lambda,
+
+            "recombination_rate": self.recombination_rate,
+            "num_parents": self.num_parents,
+            "novelty_weight": self.novelty_weight,
+            "base_mutation_rate": self.base_mutation_rate,
+            #"adaptive_mutation": self.adaptive_mutation,
+            #"adaptive_novelty": self.adaptive_novelty,
+            "update_best": self.update_best
         }
 
     def __train_all_agents(self, iteration: int, max_iterations: int):
@@ -404,7 +423,7 @@ class EMOS_EA_selection_dynamic(MOAgent):
                 ref_front=known_pareto_front,
             )
     
-    def __policy_selection(self, total_timesteps, ref_point: np.ndarray, update_best: bool = True):
+    def __policy_selection(self, total_timesteps, ref_point: np.ndarray, update_best: bool = True, novelty_weight: float=0.8):   
         """
         Chooses agents and weights to train at the next iteration based on regret and uncertainty.
         Args:
@@ -501,7 +520,7 @@ class EMOS_EA_selection_dynamic(MOAgent):
 
             # best_eval+novelty to be used as fitness
             novelty_score = self.novelty_search.compute_novelty(best_eval)
-            copied_agent.fitness = 0.2 * np.sum(best_eval) + 0.8 * novelty_score
+            copied_agent.fitness = (1-novelty_weight) * np.sum(best_eval) + novelty_weight * novelty_score
 
             self.agents[i] = copied_agent
 
@@ -521,12 +540,15 @@ class EMOS_EA_selection_dynamic(MOAgent):
                     f"current eval: {best_eval} - regret: {np.max(regret_scores)} - uncertainty: {np.max(uncertainty_scores)}"
                 )
 
-    def mutate(self, policy, mutation_rate: float = 0.1):
+    def mutate(self, policy, base_mutation_rate: float = 0.1):
+    
         """Apply mutation to a policy by adding random noise."""
-        original_policy = [param.clone() for param in policy]
+
         mutated_policy = [
-            param + mutation_rate * th.randn_like(param) for param in policy
+            param + base_mutation_rate * th.randn_like(param) for param in policy
         ]
+
+        original_policy = [param.clone() for param in policy]
 
         # parameter changes
         mutation_deltas = [
@@ -541,7 +563,7 @@ class EMOS_EA_selection_dynamic(MOAgent):
             })
         return mutated_policy
     
-    def crossover(self, parent1, parent2):
+    def crossover(self, parent1, parent2, recombination_rate: float = 0.7):
         """
         Perform single-point crossover on the parameters of two parents to produce a single child.
         
@@ -552,6 +574,12 @@ class EMOS_EA_selection_dynamic(MOAgent):
         Returns:
         - child: A new child created from the crossover of parent 1 and parent 2.
         """
+
+        # Decide whether to perform crossover based on the crossover rate
+        if random.random() > recombination_rate:
+            # Skip crossover and return a clone of one of the parents
+            return parent1 if random.random() < 0.5 else parent2
+    
         # number of parameters in both parents is the same
         assert len(parent1) == len(parent2), "Parents must have the same number of parameters."
         
@@ -592,16 +620,23 @@ class EMOS_EA_selection_dynamic(MOAgent):
         
         return top_parents
 
-    def replace_weak_policies(self, offspring: List[th.Tensor]):
+    def replace_weak_policies(self, offspring: List[th.Tensor], parents: List[MOPPO]):
         """Replace the weakest policies in the population with new offspring."""
+        # Weakest agents to replace, excluding the top parents
         weakest_agents = sorted(self.agents, key=lambda agent: agent.fitness)[:len(offspring)]
-        print(weakest_agents)
+
         for weak_agent, new_policy in zip(weakest_agents, offspring):
             th.save(weak_agent.networks.state_dict(), "new_policy1.pth")
-            #print(weak_agent)
-            #print(new_policy)
             new_policy = th.load("new_policy1.pth")
             weak_agent.networks.load_state_dict(new_policy)
+        
+        # Ensure the top parents are in the new population for elitism
+        for parent in parents:
+            if parent not in self.agents:
+                self.agents.append(parent)
+
+        # Maintain population size by removing excess weakest agents
+        self.agents = sorted(self.agents, key=lambda agent: agent.fitness, reverse=True)[:self.pop_size]
 
     def evolve_population(self):
         """Evolve the population using recombination and mutation."""
@@ -630,7 +665,7 @@ class EMOS_EA_selection_dynamic(MOAgent):
         mutated_offspring = [self.mutate(child) for child in offspring]
         
         # replace weaker policies with offspring
-        self.replace_weak_policies(mutated_offspring)
+        self.replace_weak_policies(mutated_offspring, parents)
 
     def train(
         self,
@@ -686,9 +721,9 @@ class EMOS_EA_selection_dynamic(MOAgent):
         while iteration < max_iterations:
 
 
-            # Every evolutionary iterations, change the task - weight assignments
+            # Every evolutionary generation, change the task - weight assignments
             # self.__task_weight_selection(ref_point=ref_point)
-            self.__policy_selection(total_timesteps, ref_point=ref_point, update_best = False)
+            # self.__policy_selection(total_timesteps, ref_point=ref_point, update_best = False)
 
 
             print(f"Evolutionary generation #{evolutionary_generation}")
@@ -707,6 +742,9 @@ class EMOS_EA_selection_dynamic(MOAgent):
                             "global_step": self.global_step,
                         },
                     )
+
+                self.__policy_selection(total_timesteps, ref_point=ref_point, update_best = False)
+             
                 self.__train_all_agents(iteration=iteration, max_iterations=max_iterations)
                 iteration += 1
 
