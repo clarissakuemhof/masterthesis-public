@@ -86,7 +86,7 @@ def train(worker_data: WorkerInitData) -> WorkerDoneData:
     # Set the seed
     seed_everything(seed)
 
-    if args.algo == "pgmorl" or args.algo == "emos_complexea_selection_dynamic":
+    if args.algo == "pgmorl" or args.algo == "emos_complexea_selection_dynamic" or args.algo == "emos_ea_selection_dynamic":
         # PGMORL creates its own environments because it requires wrappers
         print(f"Worker {worker_num}: Seed {seed}. Instantiating {args.algo} on {args.env_id}")
         eval_env = mo_gym.make(args.env_id)

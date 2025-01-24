@@ -1,0 +1,21 @@
+method: grid
+metric:
+  goal: maximize
+  name: avg_hypervolume
+parameters:
+  pop_size:
+    value: 4
+  base_mutation_rate:
+    value: 0.05
+  adaptive_mutation:
+    value: True
+  novelty_weight:
+    value: 0.8
+  adaptive_novelty:
+    value: True
+  num_parents:
+    value: 2
+  recombination_rate:
+    value: 0.8
+  update_best:
+    value: True
