@@ -149,7 +149,7 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
         env_id: str,
         origin: np.ndarray,
         num_envs: int = 4,
-        pop_size: int = 6,
+        pop_size: int = 4,
         warmup_iterations: int = 80, # default 80
         steps_per_iteration: int = 2048,
         evolutionary_iterations: int = 20, # default 20
@@ -185,10 +185,10 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
 
         ############## EVOLUTIONARY HYPERPARAMETERS ##############
 
-        recombination_rate: float = 0.7,
-        num_parents: int = 4,
-        novelty_weight: float = 0.5,
-        base_mutation_rate: float = 0.1,
+        recombination_rate: float = 0.8,
+        num_parents: int = 2,
+        novelty_weight: float = 0.8,
+        base_mutation_rate: float = 0.05,
         adaptive_mutation: bool = True,
         adaptive_novelty: bool = True,
         update_best: bool = True
@@ -576,7 +576,7 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
             })
         return mutated_policy
     
-    def crossover(self, parent1, parent2, num_points: int = 2, recombination_rate: float = 0.7):
+    def crossover(self, parent1, parent2, num_points: int = 2, recombination_rate: float = 0.8):
 
         # Decide whether to perform crossover based on the crossover rate
         if random.random() > recombination_rate:
@@ -614,7 +614,7 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
         # return single child
         return child
     
-    def select_parents(self, num_parents: int = 4) -> List[MOPPO]:
+    def select_parents(self, num_parents: int = 2) -> List[MOPPO]:
         """Select top-performing policies for reproduction."""
         if any(agent.fitness is None for agent in self.agents):
             raise ValueError("Fitness values are not set for all agents. Check the task weight selection process.")

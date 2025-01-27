@@ -149,7 +149,7 @@ class EMOS_EA_selection_dynamic(MOAgent):
         env_id: str,
         origin: np.ndarray,
         num_envs: int = 4,
-        pop_size: int = 6,
+        pop_size: int = 4,
         warmup_iterations: int = 80, # default 80
         steps_per_iteration: int = 2048,
         evolutionary_iterations: int = 20, # default 20
@@ -185,10 +185,10 @@ class EMOS_EA_selection_dynamic(MOAgent):
 
         ############## EVOLUTIONARY HYPERPARAMETERS ##############
 
-        recombination_rate: float = 0.7,
-        num_parents: int = 4,
-        novelty_weight: float = 0.5,
-        base_mutation_rate: float = 0.1,
+        recombination_rate: float = 0.8,
+        num_parents: int = 2,
+        novelty_weight: float = 0.8,
+        base_mutation_rate: float = 0.05,
         #adaptive_mutation: bool = True,
         #adaptive_novelty: bool = True,
         update_best: bool = True
@@ -540,7 +540,7 @@ class EMOS_EA_selection_dynamic(MOAgent):
                     f"current eval: {best_eval} - regret: {np.max(regret_scores)} - uncertainty: {np.max(uncertainty_scores)}"
                 )
 
-    def mutate(self, policy, base_mutation_rate: float = 0.1):
+    def mutate(self, policy, base_mutation_rate: float = 0.05):
     
         """Apply mutation to a policy by adding random noise."""
 
@@ -563,7 +563,7 @@ class EMOS_EA_selection_dynamic(MOAgent):
             })
         return mutated_policy
     
-    def crossover(self, parent1, parent2, recombination_rate: float = 0.7):
+    def crossover(self, parent1, parent2, recombination_rate: float = 0.8):
         """
         Perform single-point crossover on the parameters of two parents to produce a single child.
         
@@ -609,7 +609,7 @@ class EMOS_EA_selection_dynamic(MOAgent):
         # return single child
         return child
     
-    def select_parents(self, num_parents: int = 4) -> List[MOPPO]:
+    def select_parents(self, num_parents: int = 2) -> List[MOPPO]:
         """Select top-performing policies for reproduction."""
         if any(agent.fitness is None for agent in self.agents):
             raise ValueError("Fitness values are not set for all agents. Check the task weight selection process.")
