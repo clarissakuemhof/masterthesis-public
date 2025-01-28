@@ -191,7 +191,7 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
         base_mutation_rate: float = 0.05,
         adaptive_mutation: bool = True,
         adaptive_novelty: bool = True,
-        update_best: bool = True
+        update_best: bool = False
 
         ##########################################################
     ):
@@ -423,7 +423,7 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
                 ref_front=known_pareto_front,
             )
     
-    def __policy_selection(self, total_timesteps, ref_point: np.ndarray, update_best: bool = True, novelty_weight: float=0.8, adaptive_novelty = True):
+    def __policy_selection(self, total_timesteps, ref_point: np.ndarray, update_best: bool = False, novelty_weight: float=0.8, adaptive_novelty = True):
         """
         Chooses agents and weights to train at the next iteration based on regret and uncertainty.
         Args:
