@@ -16,10 +16,10 @@ Traditional MORL methods often struggle with maintaining a diverse set of soluti
 - **dynamic policy selection**: selecting policies for gradient updates in real time based on current conditions
 - multi-objective PPO for policy gradient updates 
 
-![EMOS's framework](images/methods_alg.png)
+<img src="images/methods_alg.png" alt="EMOS's framework" width="300">\
 Figure 1a: EMOS's training framework.
 
-![Policy Selection Mechanism](images/methods_inference.png)
+<img src="images/methods_inference.png" alt="Policy Selection Mechanism" width="300">\
 Figure 1b: EMOS's policy selection mechanism at inference stage.
 
 
@@ -75,19 +75,59 @@ masterthesis/
 
 ## Getting Started
 
+Follow the steps below to set up your environment and run experiments.
+
+### Prerequisites
+
+Ensure you have the following installed:
+
+- Python 3.8+
+- Virtual environment tools (`venv` or `conda`)
+- Required dependencies 
+	- mo-gymnasium (1.3.1)
+	- gymnasium (1.0.0)
+	- pymoo (0.6.1.2)
+	- wandb (0.19.0)
+	- morl-baselines (1.1.0)
+	- morl_baselines
+	- cvxpy (1.5.2)
+
+### Installation
+
+1. Clone the repository and navigate into the project directory:  
+	```bash
+	git clone https://github.com/your-username/masterthesis.git
+	cd masterthesis
+2. Running experiments:
+   ```bash 
+	python experiments/benchmark/launch_experiment.py \
+    --algo emos_complexea_selection_dynamic \
+    --env-id mo-hopper-2d-v4 \
+    --num-timesteps 5000000 \
+    --gamma 0.99 \
+    --ref-point -100 -100 \
+    --auto-tag True \
+    --seed 6
+3. Running hyperparameter sweeps:
+   ```bash 
+	python experiments/hyperparameter_search/launch_sweep.py \
+    --algo emos_complexea_selection_dynamic \
+    --env-id mo-hopper-2d-v4 \
+    --ref-point -100 -100 \
+    --config-name emos_complexea_selection_dynamic.yaml
 ## Results and Analysis
 MORL is an effective framework for balancing multiple conflicting objectives, and EMOS aims to improve the efficiency of policy evolution in such contexts. While EMOS showed promise, it lagged behind methods like CAPQL and GPI in exploring broader regions of the objective space, though it outperformed PGMORL in terms of hypervolume and expected utility. 
 
-![EMOS vs. SOFA algorithms in hopper env](images/pgmorl-emos-capql-gpi-hopper-5.png)
+<img src="images/pgmorl-emos-capql-gpi-hopper-5.png" alt="EMOS vs. SOFA in Hopper" width="450">\
 Figure 2a: Comparison of EMOS with SOFA algorithms in the *mo-hopper-2d-v4* environment.
 
-![EMOS vs. SOFA algorithms in halfcheetah env](images/pgmorl-emos-capql-gpi-halfcheetah-5.png)
+<img src="images/pgmorl-emos-capql-gpi-halfcheetah-5.png" alt="EMOS vs. SOFA in HalfCheetah" width="450">\
 Figure 2b: Comparison of EMOS with SOFA algorithms in the *mo-halfcheetah-v4* environment.
 
-![Pareto fronts in hopper env](images/pf-hopper.png)
+<img src="images/pf-hopper.png" alt="Pareto Fronts in Hopper" width="250">\
 Figure 3a: Pareto fronts in *mo-hopper-2d-v4* domain.
 
-![Pareto fronts in halfcheetah env](images/pf-halfcheetah.png)
-Figure 3b: Pareto fronts in *mo-halfcheetah-v4* domain.
+<img src="images/pf-halfcheetah.png" alt="Pareto Fronts in HalfCheetah" width="250">\
+Figure 3b: Pareto fronts in *mo-halfcheetah-v4*
 
 Despite promising results, EMOS would benefit from more hyperparameter tuning and dynamic adjustments to novelty weight for better exploration-exploitation balance. Future work could focus on applying EMOS to more environments and enhancing scalability to address complex real-world multi-objective problems.
