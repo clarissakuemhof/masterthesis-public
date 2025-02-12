@@ -18,9 +18,9 @@ from morl_baselines.multi_policy.pcn.pcn import PCN'''
 from morl_baselines.multi_policy.pgmorl.pgmorl import PGMORL
 from morl_baselines.multi_policy.pgmorl.pgmorl_EA import PGMORL_EA
 from morl_baselines.multi_policy.pgmorl.pgmorl_selection import PGMORL_selection
-from morl_baselines.multi_policy.pgmorl.emos_EA_selection import EMOS_EA_selection
-from morl_baselines.multi_policy.pgmorl.emos_EA_selection_dynamic import EMOS_EA_selection_dynamic
-from morl_baselines.multi_policy.pgmorl.emos_complexEA_selection_dynamic import EMOS_complexEA_selection_dynamic
+from morl_baselines.multi_policy.emos.emos_EA_selection import EMOS_EA_selection
+from morl_baselines.multi_policy.emos.emos_EA_selection_dynamic import EMOS_EA_selection_dynamic
+from morl_baselines.multi_policy.emos.emos_complexEA_selection_dynamic import EMOS_complexEA_selection_dynamic
 
 from morl_baselines.multi_policy.gpi_pd.gpi_pd_continuous_action import GPILSContinuousAction
 from morl_baselines.multi_policy.capql.capql import CAPQL

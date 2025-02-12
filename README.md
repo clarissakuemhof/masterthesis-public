@@ -1,132 +1,92 @@
-<<<<<<< HEAD
-# masterthesis
-=======
-[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
-![tests](https://github.com/LucasAlegre/morl-baselines/workflows/Python%20tests/badge.svg)
-[![License](http://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat)](https://github.com/LucasAlegre/morl-baselines/blob/main/LICENSE)
-[![Discord](https://img.shields.io/discord/999693014618362036?label=discord)](https://discord.gg/ygmkfnBvKA)
-[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://pre-commit.com/)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Imports: isort](https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336)](https://pycqa.github.io/isort/)
+# Master Thesis: Multi-Objective Reinforcement Learning using Evolutionary Algorithms for Diverse Policy Selection (winter term 2024/2025)
 
-<img src="docs/_static/_images/mo_cheetah.gif" alt="Multiple policies" align="right" width="50%"/>
+This repository contains the code for my master's thesis, which overall explores the integration of Evolutionary Algorithms (EAs) and policy selection mechanisms into Multi-Objective Reinforcement Learning (MORL). The approach aims to improve diversity in policy populations, and therefore enabling more adaptive decision-making in dynamic environments with competing objectives. 
 
-# MORL-Baselines
+----- 
+last updated: 02/12/2025
 
-<!-- start elevator-pitch -->
+## Overview
 
-MORL-Baselines is a library of Multi-Objective Reinforcement Learning (MORL) algorithms.
-This repository aims to contain reliable MORL algorithms implementations in PyTorch.
+Traditional MORL methods often struggle with maintaining a diverse set of solutions and typically produce a single policy selected based on predefined preferences. This repository implements **Evolutionary Multi-Objective Selector (EMOS)**, a hybrid approach that combines reinforcement learning with evolutionary techniques (mutation, selection, and crossover) to train a diverse set of policies along the Pareto front. Instead of committing to a fixed preference, a dynamic policy selection mechanism allows for adaptive decision-making at runtime.
 
-It strictly follows [MO-Gymnasium](https://github.com/Farama-Foundation/mo-gymnasium) API, which differs from the standard [Gymnasium](https://github.com/Farama-Foundation/Gymnasium) API only in that the environment returns a numpy array as the reward.
+## Contributions
 
-For details on multi-objective MDPs (MOMDPs) and other MORL definitions, we suggest reading [A practical guide to multi-objective reinforcement learning and planning](https://link.springer.com/article/10.1007/s10458-022-09552-y). An overview of some techniques used in various MORL algorithms is also provided in [Multi-Objective Reinforcement Learning Based on Decomposition: A Taxonomy and Framework](https://doi.org/10.1613/jair.1.15702).
+- **complex evolutionary operators** including mutation, selection, and crossover applied to policies to evolve a population of diverse policies distributed along the Pareto front
+- **approximating a Pareto front** while maintaining a diverse set of policies covering different trade-offs
+- **dynamic policy selection**: selecting policies for gradient updates in real time based on current conditions
+- multi-objective PPO for policy gradient updates 
 
-A tutorial on MO-Gymnasium and MORL-Baselines is also available: [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1ByjuUp8-CJeh1giPOACqPGiglPxDnlSq?usp=sharing)
+![EMOS's framework](images/methods_alg.png)
+Figure 1a: EMOS's training framework.
 
-<!-- end elevator-pitch -->
-
-## Features
-
-<!-- start features -->
-
-* Single and multi-policy algorithms under both SER and ESR criteria are implemented.
-* All algorithms follow the [MO-Gymnasium](https://www.github.com/Farama-Foundation/mo-gymnasium) API.
-* Performances are automatically reported in [Weights and Biases](https://wandb.ai/) dashboards.
-* Linting and formatting are enforced by pre-commit hooks.
-* Code is well documented.
-* All algorithms are automatically tested.
-* Utility functions are provided e.g. pareto pruning, experience buffers, etc.
-* Performances have been tested and reported in a reproducible manner.
-* Hyperparameter optimization available.
-
-<!-- end features -->
+![Policy Selection Mechanism](images/methods_inference.png)
+Figure 1b: EMOS's policy selection mechanism at inference stage.
 
 
-## Implemented Algorithms
+## Structure 
 
-<!-- start algos-list -->
-
-| **Name**                                                                                                                                                             | Single/Multi-policy | ESR/SER                     | Observation space | Action space          | Paper                                                                                                                                                    |
-|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------|-----------------------------|-------------------|-----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [GPI-LS + GPI-PD](https://github.com/LucasAlegre/morl-baselines/blob/main/morl_baselines/multi_policy/gpi_pd/gpi_pd.py)                                              | Multi               | SER                         | Continuous        | Discrete / Continuous | [Paper and Supplementary Materials](https://arxiv.org/abs/2301.07784)                                                                                    |
-| [MORL/D](https://github.com/LucasAlegre/morl-baselines/blob/main/morl_baselines/multi_policy/morld/morld.py)                                                         | Multi               | /                           | /                 | /                     | [Paper](https://doi.org/10.1613/jair.1.15702)                                                                                                                |
-| [Envelope Q-Learning](https://github.com/LucasAlegre/morl-baselines/blob/main/morl_baselines/multi_policy/envelope/envelope.py)                                      | Multi               | SER                         | Continuous        | Discrete              | [Paper](https://arxiv.org/pdf/1908.08342.pdf)                                                                                                            |
-| [CAPQL](https://github.com/LucasAlegre/morl-baselines/blob/main/morl_baselines/multi_policy/capql/capql.py)                                                          | Multi               | SER                         | Continuous        | Continuous            | [Paper](https://openreview.net/pdf?id=TjEzIsyEsQ6)                                                                                                       |
-| [PGMORL](https://github.com/LucasAlegre/morl-baselines/blob/main/morl_baselines/multi_policy/pgmorl/pgmorl.py) <sup>[1](#f1)</sup>                                   | Multi               | SER                         | Continuous        | Continuous            | [Paper](https://people.csail.mit.edu/jiex/papers/PGMORL/paper.pdf) / [Supplementary Materials](https://people.csail.mit.edu/jiex/papers/PGMORL/supp.pdf) |
-| [Pareto Conditioned Networks (PCN)](https://github.com/LucasAlegre/morl-baselines/blob/main/morl_baselines/multi_policy/pcn/pcn.py)                                  | Multi               | SER/ESR <sup>[2](#f2)</sup> | Continuous        | Discrete / Continuous | [Paper](https://www.ifaamas.org/Proceedings/aamas2022/pdfs/p1110.pdf)                                                                                    |
-| [Pareto Q-Learning](https://github.com/LucasAlegre/morl-baselines/blob/main/morl_baselines/multi_policy/pareto_q_learning/pql.py)                                    | Multi               | SER                         | Discrete          | Discrete              | [Paper](https://jmlr.org/papers/volume15/vanmoffaert14a/vanmoffaert14a.pdf)                                                                              |
-| [MO Q learning](https://github.com/LucasAlegre/morl-baselines/blob/main/morl_baselines/single_policy/ser/mo_q_learning.py)                                           | Single              | SER                         | Discrete          | Discrete              | [Paper](https://www.researchgate.net/publication/235698665_Scalarized_Multi-Objective_Reinforcement_Learning_Novel_Design_Techniques)                    |
-| [MPMOQLearning](https://github.com/LucasAlegre/morl-baselines/blob/main/morl_baselines/multi_policy/multi_policy_moqlearning/mp_mo_q_learning.py)  (outer loop MOQL) | Multi               | SER                         | Discrete          | Discrete              | [Paper](https://www.researchgate.net/publication/235698665_Scalarized_Multi-Objective_Reinforcement_Learning_Novel_Design_Techniques)                    |
-| [Optimistic Linear Support (OLS)](https://github.com/LucasAlegre/morl-baselines/blob/main/morl_baselines/multi_policy/ols/ols.py)                                    | Multi               | SER                         | /                 | /                     | Section 3.3 of the [thesis](http://roijers.info/pub/thesis.pdf)                                                                                          |
-| [Expected Utility Policy Gradient (EUPG)](https://github.com/LucasAlegre/morl-baselines/blob/main/morl_baselines/single_policy/esr/eupg.py)                          | Single              | ESR                         | Discrete          | Discrete              | [Paper](https://www.researchgate.net/publication/328718263_Multi-objective_Reinforcement_Learning_for_the_Expected_Utility_of_the_Return)                |
-
-:warning: Some of the algorithms have limited features.
-
-<b id="f1">1</b>: Currently, PGMORL is limited to environments with 2 objectives.
-
-<b id="f2">2</b>: PCN assumes environments with deterministic transitions.
-
-<!-- end algos-list -->
-
-## Benchmarking
-
-<!-- start benchmark -->
-MORL-Baselines participates to [Open RL Benchmark](https://github.com/openrlbenchmark/openrlbenchmark) which contains tracked experiments from popular RL libraries such as [cleanRL](https://github.com/vwxyzjn/cleanrl) and [Stable Baselines 3](https://github.com/DLR-RM/stable-baselines3).
-
-
-We have run experiments of our algorithms on various environments from [MO-Gymnasium](https://www.github.com/Farama-Foundation/mo-gymnasium). The results can be found here: https://wandb.ai/openrlbenchmark/MORL-Baselines. An issue tracking all the settings is available at [#43](https://github.com/LucasAlegre/morl-baselines/issues/43). Some design documentation for the experimentation protocol are also available on our [Documentation website](https://lucasalegre.github.io/morl-baselines/algos/performances/).
-<!-- end benchmark -->
-
-An example visualization of our dashboards with Pareto support is shown below:
-<img src="docs/_static/_images/wandb.png" alt="WandB dashboards"/>
-
-## Structure
-
-<!-- start structure -->
-As much as possible, this repo tries to follow the single-file implementation rule for all algorithms. The repo's structure is as follows:
-
-* `examples/` contains a set of examples to use MORL Baselines with [MO-Gymnasium](https://www.github.com/Farama-Foundation/mo-gymnasium) environments.
-* `common/` contains the implementation recurring concepts: replay buffers, neural nets, etc. See the [documentation](https://lucasalegre.github.io/morl-baselines/) for more details.
-* `multi_policy/` contains the implementations of multi-policy algorithms.
-* `single_policy/` contains the implementations of single-policy algorithms (ESR and SER).
-
-<!-- end structure -->
-
-
-## Citing the Project
-
-<!-- start citing -->
-If you use MORL-Baselines in your research, please cite our [NeurIPS 2023 paper](https://openreview.net/pdf?id=jfwRLudQyj):
-
-```bibtex
-@inproceedings{felten_toolkit_2023,
-	author = {Felten, Florian and Alegre, Lucas N. and Now{\'e}, Ann and Bazzan, Ana L. C. and Talbi, El Ghazali and Danoy, Gr{\'e}goire and Silva, Bruno Castro da},
-	title = {A Toolkit for Reliable Benchmarking and Research in Multi-Objective Reinforcement Learning},
-	booktitle = {Proceedings of the 37th Conference on Neural Information Processing Systems ({NeurIPS} 2023)},
-	year = {2023}
-}
+```bash
+masterthesis/
+│
+├── experiments/                    
+│   ├── benchmark/
+│ 	│	└── launch_experiment.py
+│   └── hyperparameter_search/
+│ 		├── configs/   
+│ 		└── launch_sweep.py                    
+│
+├── export-data/    
+│	├── XXX.csv	                 
+│   └── export.ipynb                     
+│
+├── morl_baselines/             
+│   ├── common/   
+│	│	├── model_based/  
+│	│	├── performance_indicators.py    
+│	│	├── experiments.py       
+│   │   └── ...     
+│   │
+│   ├── multi_policy/   
+│	│	├── capql/     
+│	│	├── gpi_pd/       
+│	│	├── linear_support/    
+│	│	├── pgmorl/     
+│	│	│	├── pgmorl_EA.py
+│	│	│	├── pgmorl_selection.py
+│	│	│	└── pgmorl.py
+│   │   └── emos/    
+│	│		├── emos_complexEA_selection_dynamic.py
+│	│		├── emos_EA_selection_dynamic.py
+│	│		└── emos_EA_selection.py
+│   │
+│   └── single_policy/             
+│       └── ser     
+│			├── mo_ppo_copy.py
+│			├── mo_ppo.py
+│			├── mo_q_learning.py
+│			├── mosac_continous_action.py
+│       	└── performance_plots/  
+│       
+├── README.md    
+├── test_pgmorl.py                              
+└── .gitignore               
 ```
 
-<!-- end citing -->
+## Getting Started
 
-## Maintainers
+## Results and Analysis
+MORL is an effective framework for balancing multiple conflicting objectives, and EMOS aims to improve the efficiency of policy evolution in such contexts. While EMOS showed promise, it lagged behind methods like CAPQL and GPI in exploring broader regions of the objective space, though it outperformed PGMORL in terms of hypervolume and expected utility. 
 
-<!-- start maintainers -->
-MORL-Baselines is currently maintained by [Florian Felten](https://ffelten.github.io/) (@ffelten) and [Lucas N. Alegre](https://www.inf.ufrgs.br/~lnalegre/) (@LucasAlegre).
-<!-- end maintainers -->
+![EMOS vs. SOFA algorithms in hopper env](images/pgmorl-emos-capql-gpi-hopper-5.png)
+Figure 2a: Comparison of EMOS with SOFA algorithms in the *mo-hopper-2d-v4* environment.
 
-## Contributing
+![EMOS vs. SOFA algorithms in halfcheetah env](images/pgmorl-emos-capql-gpi-halfcheetah-5.png)
+Figure 2b: Comparison of EMOS with SOFA algorithms in the *mo-halfcheetah-v4* environment.
 
-<!-- start contributing -->
-This repository is open to contributions and we are always happy to receive new algorithms, bug fixes, or features. If you want to contribute, you can join our [Discord server](https://discord.gg/ygmkfnBvKA) and discuss your ideas with us. You can also open an issue or a pull request directly.
+![Pareto fronts in hopper env](images/pf-hopper.png)
+Figure 3a: Pareto fronts in *mo-hopper-2d-v4* domain.
 
-<!-- end contributing -->
+![Pareto fronts in halfcheetah env](images/pf-halfcheetah.png)
+Figure 3b: Pareto fronts in *mo-halfcheetah-v4* domain.
 
-## Acknowledgements
-<!-- start acknowledgements -->
-* Willem Röpke, for his implementation of Pareto Q-Learning (@wilrop)
-* Mathieu Reymond, for providing us with the original implementation of PCN.
-* Denis Steckelmacher and Conor F. Hayes, for providing us with the original implementation of EUPG.
-<!-- end acknowledgements -->
->>>>>>> bb3ef19 (Initial commit master thesis)
+Despite promising results, EMOS would benefit from more hyperparameter tuning and dynamic adjustments to novelty weight for better exploration-exploitation balance. Future work could focus on applying EMOS to more environments and enhancing scalability to address complex real-world multi-objective problems.
