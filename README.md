@@ -20,11 +20,11 @@ Traditional MORL methods often struggle with maintaining a diverse set of soluti
 
 <div style="display: flex; justify-content: space-between;">
     <div style="width: 48%; text-align: center;">
-        <img src="images/methods_alg.png" alt="EMOS's framework" width="330">
+        <img src="images/methods_alg.png" alt="EMOS's framework" width="200">
         <p>Figure 1a: EMOS's training framework.</p>
     </div>
     <div style="width: 48%; text-align: center;">
-        <img src="images/methods_inference.png" alt="Policy Selection Mechanism" width="350">
+        <img src="images/methods_inference.png" alt="Policy Selection Mechanism" width="200">
         <p>Figure 1b: EMOS's policy selection mechanism at inference stage.</p>
     </div>
 </div>
@@ -136,11 +136,11 @@ Figure 2b: Comparison of EMOS with SOFA algorithms in the *mo-halfcheetah-v4* en
 
 <div style="display: flex; justify-content: space-between;">
     <div style="width: %; text-align: center;">
-        <img src="images/pf-hopper.png" alt="Pareto Fronts in Hopper" width="355">
+        <img src="images/pf-hopper.png" alt="Pareto Fronts in Hopper" width="250">
         <p>Figure 3a: Pareto fronts in <em>mo-hopper-2d-v4</em> domain.</p>
     </div>
     <div style="width: 48%; text-align: center;">
-        <img src="images/pf-halfcheetah.png" alt="Pareto Fronts in HalfCheetah" width="365">
+        <img src="images/pf-halfcheetah.png" alt="Pareto Fronts in HalfCheetah" width="300">
         <p>Figure 3b: Pareto fronts in <em>mo-halfcheetah-v4</em> domain.</p>
     </div>
 </div>
