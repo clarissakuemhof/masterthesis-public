@@ -20,7 +20,7 @@ Traditional MORL methods often struggle with maintaining a diverse set of soluti
 
 |  |  |
 |--|--|
-| <img src="images/methods_alg.png" alt="EMOS's framework" width="300"> | <img src="images/methods_inference.png" alt="Policy Selection Mechanism" width="287"> |
+| <img src="images/methods_alg.png" alt="EMOS's framework" width="400"> | <img src="images/methods_inference.png" alt="Policy Selection Mechanism" width="400"> |
 | Figure 1a: EMOS's training framework. | Figure 1b: EMOS's policy selection mechanism at inference stage. |
 
 
@@ -131,7 +131,7 @@ Figure 2b: Comparison of EMOS with SOFA algorithms in the *mo-halfcheetah-v4* en
 
 |  |  |
 |--|--|
-| <img src="images/pf-hopper.png" alt="Pareto Fronts in Hopper" width="250"> | <img src="images/pf-halfcheetah.png" alt="Pareto Fronts in HalfCheetah" width="250"> |
+| <img src="images/pf-hopper.png" alt="Pareto Fronts in Hopper" width="350"> | <img src="images/pf-halfcheetah.png" alt="Pareto Fronts in HalfCheetah" width="350"> |
 | Figure 3a: Pareto fronts in *mo-hopper-2d-v4* domain. | Figure 3b: Pareto fronts in *mo-halfcheetah-v4* domain. |
 
 Despite promising results, EMOS would benefit from more hyperparameter tuning and dynamic adjustments to novelty weight for better exploration-exploitation balance. Future work could focus on applying EMOS to more environments and enhancing scalability to address complex real-world multi-objective problems.
