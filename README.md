@@ -16,12 +16,18 @@ Traditional MORL methods often struggle with maintaining a diverse set of soluti
 - **dynamic policy selection**: selecting policies for gradient updates in real time based on current conditions
 - multi-objective PPO for policy gradient updates 
 
-<img src="images/methods_alg.png" alt="EMOS's framework" width="300">\
-Figure 1a: EMOS's training framework.
+### Methodology
 
-<img src="images/methods_inference.png" alt="Policy Selection Mechanism" width="300">\
-Figure 1b: EMOS's policy selection mechanism at inference stage.
-
+<div style="display: flex; justify-content: space-between;">
+    <div style="width: 48%; text-align: center;">
+        <img src="images/methods_alg.png" alt="EMOS's framework" width="330">
+        <p>Figure 1a: EMOS's training framework.</p>
+    </div>
+    <div style="width: 48%; text-align: center;">
+        <img src="images/methods_inference.png" alt="Policy Selection Mechanism" width="350">
+        <p>Figure 1b: EMOS's policy selection mechanism at inference stage.</p>
+    </div>
+</div>
 
 ## Structure 
 
@@ -118,16 +124,25 @@ Ensure you have the following installed:
 ## Results and Analysis
 MORL is an effective framework for balancing multiple conflicting objectives, and EMOS aims to improve the efficiency of policy evolution in such contexts. While EMOS showed promise, it lagged behind methods like CAPQL and GPI in exploring broader regions of the objective space, though it outperformed PGMORL in terms of hypervolume and expected utility. 
 
-<img src="images/pgmorl-emos-capql-gpi-hopper-5.png" alt="EMOS vs. SOFA in Hopper" width="450">\
+### EMOS vs. SOFA algorithms
+
+<img src="images/pgmorl-emos-capql-gpi-hopper-5.png" alt="EMOS vs. SOFA in Hopper" width="900">\
 Figure 2a: Comparison of EMOS with SOFA algorithms in the *mo-hopper-2d-v4* environment.
 
-<img src="images/pgmorl-emos-capql-gpi-halfcheetah-5.png" alt="EMOS vs. SOFA in HalfCheetah" width="450">\
+<img src="images/pgmorl-emos-capql-gpi-halfcheetah-5.png" alt="EMOS vs. SOFA in HalfCheetah" width="900">\
 Figure 2b: Comparison of EMOS with SOFA algorithms in the *mo-halfcheetah-v4* environment.
 
-<img src="images/pf-hopper.png" alt="Pareto Fronts in Hopper" width="250">\
-Figure 3a: Pareto fronts in *mo-hopper-2d-v4* domain.
+### Pareto fronts: EMOS vs. SOFA algorithms
 
-<img src="images/pf-halfcheetah.png" alt="Pareto Fronts in HalfCheetah" width="250">\
-Figure 3b: Pareto fronts in *mo-halfcheetah-v4*
+<div style="display: flex; justify-content: space-between;">
+    <div style="width: %; text-align: center;">
+        <img src="images/pf-hopper.png" alt="Pareto Fronts in Hopper" width="355">
+        <p>Figure 3a: Pareto fronts in <em>mo-hopper-2d-v4</em> domain.</p>
+    </div>
+    <div style="width: 48%; text-align: center;">
+        <img src="images/pf-halfcheetah.png" alt="Pareto Fronts in HalfCheetah" width="365">
+        <p>Figure 3b: Pareto fronts in <em>mo-halfcheetah-v4</em> domain.</p>
+    </div>
+</div>
 
 Despite promising results, EMOS would benefit from more hyperparameter tuning and dynamic adjustments to novelty weight for better exploration-exploitation balance. Future work could focus on applying EMOS to more environments and enhancing scalability to address complex real-world multi-objective problems.
