@@ -1,10 +1,3 @@
-"""PGMORL algorithm implementation.
-
-Some code in this file has been adapted from the original code provided by the authors of the paper https://github.com/mit-gfx/PGMORL.
-(!) Limited to 2 objectives for now.
-(!) The post-processing phase has not been implemented yet.
-"""
-
 import time
 from copy import deepcopy
 from typing import List, Optional, Tuple, Union
@@ -17,7 +10,6 @@ import numpy as np
 import torch as th
 import wandb
 import random
-#random.seed(1)
 import math
 
 from scipy.optimize import least_squares
@@ -29,30 +21,14 @@ from morl_baselines.common.performance_indicators import hypervolume, sparsity
 from morl_baselines.single_policy.ser.mo_ppo_copy import MOPPO, MOPPONet, make_env
 
 def generate_weights(delta_weight: float) -> np.ndarray:
-    """Generates weights uniformly distributed over the objective dimensions. These weight vectors are separated by delta_weight distance.
-
-    Args:
-        delta_weight: distance between weight vectors
-    Returns:
-        all the candidate weights
-    """
+    # generates weights uniformly distributed over the objective dimensions
     return np.linspace((0.0, 1.0), (1.0, 0.0), int(1 / delta_weight) + 1, dtype=np.float32)
 
-
 class PerformanceBuffer:
-    """Stores the population. Divides the objective space in to n bins of size max_size.
-
-    (!) restricted to 2D objective space (!)
-    """
+    # stores the population
 
     def __init__(self, num_bins: int, max_size: int, origin: np.ndarray):
-        """Initializes the buffer.
 
-        Args:
-            num_bins: number of bins
-            max_size: maximum size of each bin
-            origin: origin of the objective space (to have only positive values)
-        """
         self.num_bins = num_bins
         self.max_size = max_size
         self.origin = -origin
@@ -62,22 +38,14 @@ class PerformanceBuffer:
 
     @property
     def evaluations(self) -> List[np.ndarray]:
-        """Returns the evaluations of the individuals in the buffer."""
         # flatten
         return [e for l in self.bins_evals for e in l]
 
     @property
     def individuals(self) -> list:
-        """Returns the individuals in the buffer."""
         return [i for l in self.bins for i in l]
 
     def add(self, candidate, evaluation: np.ndarray):
-        """Adds a candidate to the buffer.
-
-        Args:
-            candidate: candidate to add
-            evaluation: evaluation of the candidate
-        """
 
         def center_eval(eval):
             # Objectives must be positive
@@ -104,29 +72,18 @@ class PerformanceBuffer:
 
 class NoveltySearch:
     def __init__(self, archive, k=5):
-        """
-        A simple novelty search mechanism based on distance to k-nearest neighbors in the objective space.
+        # simple novelty search mechanism based on distance to k-nearest neighbors in the objective space
 
-        Args:
-            archive: A list to store previous solutions' performance metrics.
-            k: Number of nearest neighbors to use for calculating novelty.
-        """
-        self.archive = archive  # Store past solutions' evaluations
-        self.k = k  # Number of neighbors to consider for novelty
+        self.archive = archive  # past solutions' evaluations
+        self.k = k  # number of neighbors to consider for novelty
 
     def compute_novelty(self, candidate_performance):
-        """
-        Compute the novelty of a candidate solution based on its distance to past solutions.
+        
+        # compute the novelty of a candidate solution based on its distance to past solutions
 
-        Args:
-            candidate_performance: The performance of the current candidate.
-
-        Returns:
-            The novelty score, based on k-nearest neighbors.
-        """
         #print(self.archive)
         if len(self.archive) == 0:
-            return 0.0  # No novelty for the first solution
+            return 0.0  # no novelty for the first solution
         
         archive_evaluations = np.array(self.archive.evaluations)
         
@@ -424,12 +381,8 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
             )
     
     def __policy_selection(self, total_timesteps, ref_point: np.ndarray, update_best: bool = False, novelty_weight: float=0.8, adaptive_novelty = True):
-        """
-        Chooses agents and weights to train at the next iteration based on regret and uncertainty.
-        Args:
-        - ref_point: Reference point for calculating hypervolume.
-        - update_best: If True, update the best agents (lowest regret/uncertainty). If False, update the worst agents (highest regret/uncertainty).
-        """
+        # chooses agents and weights to train at the next iteration based on regret and uncertainty
+
         candidate_weights = generate_weights(self.delta_weight / 2.0)  # generate more weights than agents
         self.np_random.shuffle(candidate_weights)  
 
@@ -722,7 +675,6 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
         )
 
         # Evolution
-        # without the 15*, the loop would only run once
         max_iterations = max(max_iterations, self.warmup_iterations + (27*self.evolutionary_iterations))
         evolutionary_generation = 1
         while iteration < max_iterations:

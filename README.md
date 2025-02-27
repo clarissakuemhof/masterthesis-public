@@ -116,8 +116,11 @@ Ensure you have the following installed:
     --env-id mo-hopper-2d-v4 \
     --ref-point -100 -100 \
     --config-name emos_complexea_selection_dynamic.yaml
+
 ## Results and Analysis
 MORL is an effective framework for balancing multiple conflicting objectives, and EMOS aims to improve the efficiency of policy evolution in such contexts. While EMOS showed promise, it lagged behind methods like CAPQL and GPI in exploring broader regions of the objective space, though it outperformed PGMORL in terms of hypervolume and expected utility. 
+
+The results have been observed and tracked using Weights & Biases (WandB) (Biewald, 2020), a platform for real-time monitoring and visualization of machine learning model training. WandB provides an intuitive interface to display various metrics, including multi-objective metrics and a live view of the Pareto front across different algorithm runs. All relevant results have been compiled into a comprehensive [report](export-data/wandb-report.pdf). 
 
 ### EMOS vs. SOFA algorithms
 
