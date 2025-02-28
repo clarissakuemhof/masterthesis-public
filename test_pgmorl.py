@@ -23,7 +23,7 @@ def test_pgmorl():
     )
     env = make_env(env_id, 422, 1, "PGMORL_test", gamma=0.995)()  # idx != 0 to avoid taking videos
 
-    # Execution of trained policies
+    # execution of trained policies
     for a in algo.archive.individuals:
         scalarized, discounted_scalarized, reward, discounted_reward = eval_mo(
             agent=a, env=env, w=np.array([1.0, 1.0]), render=True

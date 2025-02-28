@@ -1,10 +1,3 @@
-"""PGMORL algorithm implementation.
-
-Some code in this file has been adapted from the original code provided by the authors of the paper https://github.com/mit-gfx/PGMORL.
-(!) Limited to 2 objectives for now.
-(!) The post-processing phase has not been implemented yet.
-"""
-
 import time
 from copy import deepcopy
 from typing import List, Optional, Tuple, Union
@@ -17,7 +10,6 @@ import numpy as np
 import torch as th
 import wandb
 import random
-#random.seed(1)
 import math
 
 from scipy.optimize import least_squares

@@ -1,3 +1,5 @@
+# THIS IS THE FINAL ALGORITHM!!!
+
 import time
 from copy import deepcopy
 from typing import List, Optional, Tuple, Union
@@ -376,7 +378,8 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
                 hv_ref_point=ref_point,
                 reward_dim=self.reward_dim,
                 global_step=self.global_step,
-                n_sample_weights=self.num_eval_weights_for_eval,
+                n_sample_weights=self.num_eval_weights_for_eval, 
+                # n_sample_weights=self.pop_size,
                 ref_front=known_pareto_front,
             )
     
@@ -531,9 +534,9 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
     
     def crossover(self, parent1, parent2, num_points: int = 2, recombination_rate: float = 0.8):
 
-        # Decide whether to perform crossover based on the crossover rate
+        # decide whether to perform crossover based on the crossover rate
         if random.random() > recombination_rate:
-            # Skip crossover and return a clone of one of the parents
+            # skip crossover and return a clone of one of the parents
             return parent1 if random.random() < 0.5 else parent2
     
 
@@ -581,7 +584,7 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
     def replace_weak_policies(self, offspring: List[th.Tensor], parents: List[MOPPO]):
         """Replace the weakest policies in the population with new offspring."""
 
-        # Weakest agents to replace, excluding the top parents
+        # weakest agents to replace, excluding the top parents
         weakest_agents = sorted(self.agents, key=lambda agent: agent.fitness)[:len(offspring)]
 
         for weak_agent, new_policy in zip(weakest_agents, offspring):
@@ -589,12 +592,12 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
             new_policy = th.load("new_policy3.pth")
             weak_agent.networks.load_state_dict(new_policy)
         
-        # Ensure the top parents are in the new population for elitism
+        # ensure the top parents are in the new population for elitism
         for parent in parents:
             if parent not in self.agents:
                 self.agents.append(parent)
 
-        # Maintain population size by removing excess weakest agents
+        # maintain population size by removing excess weakest agents
         self.agents = sorted(self.agents, key=lambda agent: agent.fitness, reverse=True)[:self.pop_size]
 
     def evolve_population(self):
@@ -650,7 +653,7 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
         # -> (steps_per_iteration * num_envs * pop_size)  timesteps per iteration
         max_iterations = total_timesteps // self.steps_per_iteration // self.num_envs // self.pop_size
         iteration = 0
-        # Init
+
         current_evaluations = [np.zeros(self.reward_dim) for _ in range(len(self.agents))]
         self.__eval_all_agents(
             eval_env=eval_env,
@@ -675,7 +678,7 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
         )
 
         # Evolution
-        max_iterations = max(max_iterations, self.warmup_iterations + (27*self.evolutionary_iterations))
+        max_iterations = max(max_iterations, self.warmup_iterations + (self.evolutionary_iterations))
         evolutionary_generation = 1
         while iteration < max_iterations:
 
@@ -692,7 +695,7 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
                 )
 
             for _ in range(self.evolutionary_iterations):
-                # Run training of every agent for evolutionary iterations.
+                # run training of every agent for evolutionary iterations
                 if self.log:
                     print(f"Evolutionary iteration #{iteration - self.warmup_iterations}")
                     wandb.log(
@@ -709,8 +712,6 @@ class EMOS_complexEA_selection_dynamic(MOAgent):
 
                 self.evolve_population()
 
-                # eval agents eins nach rechts shiften, 
-                # sodass jede evol iteration evaluiert wird?
                 if iteration % 20 == 0:
                     self.__eval_all_agents(
                             eval_env=eval_env,

@@ -1,11 +1,3 @@
-"""Launches an experiment on a given environment and algorithm.
-
-Many parameters can be given in the command line, see the help for more infos.
-
-Examples:
-    python benchmark/launch_experiment.py --algo pcn --env-id deep-sea-treasure-v0 --num-timesteps 1000000 --gamma 0.99 --ref-point 0 -25 --auto-tag True --wandb-entity openrlbenchmark --seed 0 --init-hyperparams "scaling_factor:np.array([1, 1, 1])"
-"""
-
 import argparse
 import os
 import subprocess
