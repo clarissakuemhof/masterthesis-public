@@ -3,11 +3,11 @@
 This repository contains the code for my master's thesis, which overall explores the integration of Evolutionary Algorithms (EAs) and policy selection mechanisms into Multi-Objective Reinforcement Learning (MORL). The approach aims to improve diversity in policy populations, and therefore enabling more adaptive decision-making in dynamic environments with competing objectives. 
 
 ----- 
-last updated: 02/12/2025
+last updated: 6th of March 2025
 
 ## Overview
 
-Traditional MORL methods often struggle with maintaining a diverse set of solutions and typically produce a single policy selected based on predefined preferences. This repository implements **Evolutionary Multi-Objective Selector (EMOS)**, a hybrid approach that combines reinforcement learning with evolutionary techniques (mutation, selection, and crossover) to train a diverse set of policies along the Pareto front. Instead of committing to a fixed preference, a dynamic policy selection mechanism allows for adaptive decision-making at runtime.
+Traditional MORL methods often struggle with maintaining a diverse set of solutions and typically produce a single policy selected based on predefined preferences. This repository includes **Evolutionary Multi-Objective Selector (EMOS)**, a hybrid approach that combines reinforcement learning with evolutionary techniques (mutation, selection, and crossover) to train a diverse set of policies along the Pareto front. Instead of committing to a fixed preference, a dynamic policy selection mechanism allows for adaptive decision-making at runtime.
 
 ## Contributions
 
@@ -25,6 +25,8 @@ Traditional MORL methods often struggle with maintaining a diverse set of soluti
 
 
 ## Structure 
+
+The final algorithm can be found in this file: `morl_baselines/multi_policy/emos/emos_complexEA_selection_dynamic.py`
 
 ```bash
 masterthesis/
@@ -97,8 +99,8 @@ Ensure you have the following installed:
 
 1. Clone the repository and navigate into the project directory:  
 	```bash
-	git clone https://github.com/your-username/masterthesis.git
-	cd masterthesis
+	git clone https://github.com/clarissakuemhof/masterthesis-public.git
+	cd masterthesis-public
 2. Running experiments:
    ```bash 
 	python experiments/benchmark/launch_experiment.py \
